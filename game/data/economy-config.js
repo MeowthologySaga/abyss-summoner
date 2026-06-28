@@ -124,7 +124,7 @@
     { id: "obsidian-hourglass", name: "흑요석 모래시계", desc: "공격속도 증가", effect: "attackSpeedPct", base: 0.026, cost: 18 },
     { id: "rift-incense", name: "균열의 향로", desc: "1000층 이후 적 압박 디버프 저항", effect: "debuffResistPct", base: 0.035, cost: 16 },
     { id: "summoner-ledger", name: "소환사의 장부", desc: "일반 소환 골드 비용 감소", effect: "normalSummonDiscountPct", base: 0.018, cost: 24 },
-    { id: "radiant-seal", name: "찬란한 봉인", desc: "프리미엄 소환 Epic/Legendary 확률 증가", effect: "premiumLuckPct", base: 0.012, cost: 30 },
+    { id: "radiant-seal", name: "찬란한 봉인", desc: "프리미엄 소환 Epic/Legendary 확률 소폭 증가", effect: "premiumLuckPct", base: 0.004, cost: 30 },
     { id: "purifying-mask", name: "정화의 가면", desc: "심연 압박 디버프 저항 증가", effect: "debuffResistPct", base: 0.028, cost: 26 },
     { id: "weakness-sigil", name: "약점 성표", desc: "역할 상성 피해 증가", effect: "weaknessBonusPct", base: 0.026, cost: 18 },
     { id: "execution-candle", name: "처형자의 초", desc: "보스 HP가 낮을수록 마무리 피해 증가", effect: "lowHpBossDamagePct", base: 0.04, cost: 20 }
@@ -141,9 +141,9 @@
     treasures,
     summonBalance: {
       premiumLuck: {
-        cap: 0.18,
-        epicBonusScale: 42,
-        legendaryBonusScale: 13,
+        cap: 0.06,
+        epicBonusScale: 18,
+        legendaryBonusScale: 4.5,
         minCommon: 20
       }
     }
