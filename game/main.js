@@ -4529,7 +4529,7 @@
     const stats = calcStats();
     const enemy = app.enemy || enemyForStage(app.save.stage, app.save.floorKill);
     const compact = w < 430;
-    const sceneScale = compact ? Math.max(0.74, Math.min(0.84, h / 300)) : 1;
+    const sceneScale = compact ? Math.max(0.68, Math.min(0.78, h / 340)) : 1;
     const heroX = w * (compact ? 0.25 : 0.24);
     const enemyX = w * (compact ? 0.76 : 0.78);
     const floorY = h * (compact ? 0.78 : 0.73);
@@ -4548,7 +4548,7 @@
 
     drawHitImpacts(enemyX, floorY);
     drawDamageTexts(enemyX, floorY, compact);
-    drawCombatStatusPanel(w, floorY, enemy, stats, compact);
+    drawCombatStatusPanel(w, h, floorY, enemy, stats, compact);
 
     app.attackFlash = Math.max(0, app.attackFlash - 0.016);
     app.enemyFlash = Math.max(0, app.enemyFlash - 0.016);
@@ -4570,11 +4570,11 @@
     return { x: heroX + slot.x * sceneScale, y: slot.y * sceneScale, scale: slot.scale * sceneScale };
   }
 
-  function drawCombatStatusPanel(w, floorY, enemy, stats, compact) {
-    const panelW = Math.min(compact ? 216 : 260, w * 0.48);
-    const panelH = 52;
-    const panelX = Math.round(w - panelW - (compact ? 10 : 14));
-    const panelY = Math.round(floorY + 34);
+  function drawCombatStatusPanel(w, h, floorY, enemy, stats, compact) {
+    const panelW = Math.min(compact ? 188 : 260, w * (compact ? 0.45 : 0.48));
+    const panelH = compact ? 48 : 52;
+    const panelX = Math.round(w - panelW - (compact ? 8 : 14));
+    const panelY = Math.round(compact ? Math.min(floorY + 22, h - panelH - 8) : floorY + 34);
     const hpPct = Math.max(0, Math.min(1, enemy.hp / enemy.maxHp));
     const bossBonus = enemy.boss ? 1 + stats.bossDamagePct : 1;
     const effectiveDps = damageAfterEnemyDebuff(stats.dps * bossBonus * bossHighHpMultiplier(enemy, stats) * bossLowHpMultiplier(enemy, stats), enemy, stats);
@@ -4590,7 +4590,7 @@
     ctx.strokeRect(panelX + 0.5, panelY + 0.5, panelW - 1, panelH - 1);
 
     ctx.textBaseline = "alphabetic";
-    ctx.font = `800 ${compact ? 10 : 11}px sans-serif`;
+    ctx.font = `800 ${compact ? 9 : 11}px sans-serif`;
     ctx.textAlign = "left";
     ctx.fillStyle = "#f6efe7";
     ctx.fillText(`${enemyKind} · ${roleLabel}`, panelX + 10, panelY + 15);
@@ -4599,15 +4599,15 @@
     ctx.fillText(enemyLabel, panelX + panelW - 10, panelY + 15);
 
     ctx.fillStyle = "#2b1115";
-    ctx.fillRect(panelX + 9, panelY + 22, panelW - 18, 8);
+    ctx.fillRect(panelX + (compact ? 7 : 9), panelY + (compact ? 18 : 22), panelW - (compact ? 14 : 18), compact ? 6 : 8);
     ctx.fillStyle = enemy.boss ? "#fb7185" : "#f5c76a";
-    ctx.fillRect(panelX + 9, panelY + 22, (panelW - 18) * hpPct, 8);
+    ctx.fillRect(panelX + (compact ? 7 : 9), panelY + (compact ? 18 : 22), (panelW - (compact ? 14 : 18)) * hpPct, compact ? 6 : 8);
     ctx.fillStyle = "rgba(255, 255, 255, 0.16)";
-    ctx.fillRect(panelX + 9, panelY + 22, panelW - 18, 2);
+    ctx.fillRect(panelX + (compact ? 7 : 9), panelY + (compact ? 18 : 22), panelW - (compact ? 14 : 18), compact ? 1.5 : 2);
 
     ctx.fillStyle = "#f6efe7";
     ctx.textAlign = "left";
-    ctx.font = `900 ${compact ? 10 : 11}px sans-serif`;
+    ctx.font = `900 ${compact ? 9 : 11}px sans-serif`;
     ctx.fillText(`실전 DPS ${fmt(effectiveDps)}`, panelX + 10, panelY + 44);
     ctx.textAlign = "right";
     ctx.fillStyle = "#f5c76a";
