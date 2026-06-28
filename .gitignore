@@ -9,3 +9,10 @@ Thumbs.db
 assets/generated/backgrounds/raw-v2/
 assets/generated/catalog-forge-v2/
 assets/generated/icons-v2/
+assets/generated/fx/critical-candidates/
+assets/generated/fx/critical-impact/animation.gif
+assets/generated/fx/critical-impact/impact-*.png
+assets/generated/fx/critical-impact/pipeline-meta.json
+assets/generated/fx/critical-impact/prompt-used.txt
+assets/generated/fx/critical-impact/raw-sheet*.png
+assets/generated/fx/critical-impact/sheet-transparent.png

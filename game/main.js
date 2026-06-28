@@ -3,82 +3,21 @@
 
   const PACK_ID = "meowthology.abyss-summoner";
   const SAVE_KEY = "abyss-summoner-save-v1";
-  const MAX_PITY = 60;
-  const NORMAL_PITY = 120;
+  const ECONOMY_CONFIG = window.ABYSS_SUMMONER_ECONOMY_CONFIG;
+  if (!ECONOMY_CONFIG) {
+    throw new Error("economy-config.js must be loaded before main.js");
+  }
+  const MAX_PITY = ECONOMY_CONFIG.maxPity;
+  const NORMAL_PITY = ECONOMY_CONFIG.normalPity;
   const MONSTERS_PER_FLOOR = 5;
   const TABS = ["quest", "weapon", "summon", "heroes", "gear", "treasure", "shop", "rebirth"];
 
-  const ACTIONS = window.ABYSS_SUMMONER_DIAMOND_ACTIONS;
+  const ACTIONS = ECONOMY_CONFIG.diamondActions;
   const ACTION_BY_ID = Object.fromEntries(ACTIONS.map((action) => [action.id, action]));
-
-  const DIAMOND_UPGRADES = [
-    {
-      id: "void-brand",
-      action: "upgrade-void-brand",
-      name: "공허 각인",
-      desc: "환생해도 사라지지 않는 전체 피해 보정입니다.",
-      icon: "diamond",
-      effect: "attackPct",
-      base: 0.08,
-      max: 20
-    },
-    {
-      id: "quick-ritual",
-      action: "upgrade-quick-ritual",
-      name: "가속 의식",
-      desc: "주인공과 동료의 공격 주기를 영구적으로 줄입니다.",
-      icon: "bell",
-      effect: "attackSpeedPct",
-      base: 0.03,
-      max: 15
-    },
-    {
-      id: "gold-oath",
-      action: "upgrade-gold-oath",
-      name: "황금 서약",
-      desc: "전투와 퀘스트 골드 획득량을 영구적으로 높입니다.",
-      icon: "coin",
-      effect: "goldPct",
-      base: 0.12,
-      max: 20
-    },
-    {
-      id: "soul-compass",
-      action: "upgrade-soul-compass",
-      name: "영혼 나침반",
-      desc: "보스와 환생으로 얻는 영혼석을 영구적으로 늘립니다.",
-      icon: "crystal",
-      effect: "soulPct",
-      base: 0.08,
-      max: 15
-    }
-  ];
-
-  const CONSUMABLES = [
-    {
-      id: "battle-catalyst",
-      action: "buy-battle-catalyst",
-      name: "전투 촉매",
-      desc: "사용하면 5분 동안 전체 피해와 공격속도가 크게 오릅니다.",
-      icon: "catalyst"
-    },
-    {
-      id: "gold-seal",
-      action: "buy-gold-seal",
-      name: "금고 봉인서",
-      desc: "사용하면 현재 진행도 기준 골드를 즉시 얻습니다.",
-      icon: "order"
-    },
-    {
-      id: "soul-candle",
-      action: "buy-soul-candle",
-      name: "영혼 촛불",
-      desc: "사용하면 현재 심연 진행도 기준 영혼석을 얻습니다.",
-      icon: "soul-flare"
-    }
-  ];
-
-  const BATTLE_CATALYST_DURATION_MS = 5 * 60 * 1000;
+  const DIAMOND_UPGRADES = ECONOMY_CONFIG.diamondUpgrades;
+  const CONSUMABLES = ECONOMY_CONFIG.consumables;
+  const BATTLE_CATALYST_DURATION_MS = ECONOMY_CONFIG.battleCatalystDurationMs;
+  const SUMMON_BALANCE = ECONOMY_CONFIG.summonBalance;
 
   const SKINS = [
     {
@@ -168,21 +107,7 @@
     legendary: { label: "Legendary", weight: 1, shard: 1, color: "#f5c76a", mult: 6 }
   };
   const CODEX_RARITY_ORDER = ["legendary", "epic", "rare", "common"];
-
-  const SUMMON_MODES = {
-    normal: {
-      label: "일반",
-      currency: "gold",
-      pity: NORMAL_PITY,
-      rates: { common: 78, rare: 19, epic: 2.7, legendary: 0.3 }
-    },
-    premium: {
-      label: "프리미엄",
-      currency: "diamond",
-      pity: MAX_PITY,
-      rates: { common: 50, rare: 35, epic: 12, legendary: 3 }
-    }
-  };
+  const SUMMON_MODES = ECONOMY_CONFIG.summonModes;
 
   const ROLES = {
     tank: { label: "탱커", className: "role-tank", bonus: "보스 피해 +10%" },
@@ -1003,32 +928,7 @@
     { id: "endless-tribute", name: "끝없는 조공 징수", desc: "심연 끝자락의 조공을 모아 장기 성장의 핵심 수입을 만듭니다.", icon: "diamond", baseCost: 675000000000000000, growth: 1.88, incomeBase: 49000000000000, incomeGrowth: 1.38 }
   ];
 
-  const TREASURES = [
-    { id: "haste-gear", name: "가속 태엽", desc: "공격속도 증가", effect: "attackSpeedPct", base: 0.035, cost: 10 },
-    { id: "evolved-signet", name: "진화된 힘의 십자가", desc: "공격력 추가 증가", effect: "attackPct", base: 0.075, cost: 3 },
-    { id: "twisted-ring", name: "버려진 힘의 반지", desc: "공격력 증가", effect: "attackPct", base: 0.055, cost: 2 },
-    { id: "storm-claw", name: "버려진 폭풍의 칼날", desc: "치명률과 치명 피해 증가", effect: "critPct", base: 0.12, cost: 3 },
-    { id: "owls-crown", name: "버려진 독수리의 상", desc: "퀘스트 골드 획득 증가", effect: "questGoldPct", base: 0.055, cost: 6 },
-    { id: "golden-crystal", name: "버려진 황금 수정", desc: "적 처치 골드 획득 증가", effect: "killGoldPct", base: 0.04, cost: 4 },
-    { id: "hollow-incense", name: "텅 빈 향로", desc: "동료 전투력 보정 증가", effect: "familiarPct", base: 0.06, cost: 5 },
-    { id: "grave-crown", name: "무덤왕의 관", desc: "보스에게 주는 피해 증가", effect: "bossDamagePct", base: 0.075, cost: 7 },
-    { id: "black-tithe", name: "검은 십일조 장부", desc: "보스 처치 골드와 영혼석 보상 증가", effect: "bossRewardPct", base: 0.04, cost: 8 },
-    { id: "pilgrim-chain", name: "순례자의 사슬", desc: "보스 피해 증가", effect: "bossDamagePct", base: 0.05, cost: 5 },
-    { id: "nameless-anvil", name: "무명 대장간 모루", desc: "회차 무기 ATK 증가", effect: "weaponPct", base: 0.055, cost: 9 },
-    { id: "soul-hourglass", name: "영혼 모래시계", desc: "보유 영혼석 피해 보정 증가", effect: "soulPct", base: 0.035, cost: 12 },
-    { id: "gate-lantern", name: "문지기의 등불", desc: "보스 영혼석 획득 증가", effect: "bossSoulPct", base: 0.025, cost: 15 },
-    { id: "reserve-banner", name: "예비대 깃발", desc: "미편성 동료 DPS 반영률 증가", effect: "reserveDpsPct", base: 0.018, cost: 18 },
-    { id: "collector-crest", name: "수집가의 문장", desc: "동료와 장비 보유 효과 증가", effect: "ownedEffectPct", base: 0.022, cost: 20 },
-    { id: "abyss-compass", name: "심연 나침반", desc: "환생 영혼석 획득 증가", effect: "rebirthSoulPct", base: 0.03, cost: 22 },
-    { id: "old-contract", name: "오래된 계약서", desc: "퀘스트 골드 획득 증가", effect: "questGoldPct", base: 0.048, cost: 14 },
-    { id: "obsidian-hourglass", name: "흑요석 모래시계", desc: "공격속도 증가", effect: "attackSpeedPct", base: 0.026, cost: 18 },
-    { id: "rift-incense", name: "균열의 향로", desc: "1000층 이후 적 압박 디버프 저항", effect: "debuffResistPct", base: 0.035, cost: 16 },
-    { id: "summoner-ledger", name: "소환사의 장부", desc: "일반 소환 골드 비용 감소", effect: "normalSummonDiscountPct", base: 0.018, cost: 24 },
-    { id: "radiant-seal", name: "찬란한 봉인", desc: "프리미엄 소환 Epic/Legendary 확률 증가", effect: "premiumLuckPct", base: 0.012, cost: 30 },
-    { id: "purifying-mask", name: "정화의 가면", desc: "심연 압박 디버프 저항 증가", effect: "debuffResistPct", base: 0.028, cost: 26 },
-    { id: "weakness-sigil", name: "약점 성표", desc: "역할 상성 피해 증가", effect: "weaknessBonusPct", base: 0.026, cost: 18 },
-    { id: "execution-candle", name: "처형자의 초", desc: "보스 HP가 낮을수록 마무리 피해 증가", effect: "lowHpBossDamagePct", base: 0.04, cost: 20 }
-  ];
+  const TREASURES = ECONOMY_CONFIG.treasures;
 
   const DEFAULT_SAVE = {
     saveSchemaVersion: 2,
@@ -2017,7 +1917,7 @@
     effects.reserveDpsPct = Math.min(0.6, effects.reserveDpsPct);
     effects.ownedEffectPct = Math.min(0.7, effects.ownedEffectPct);
     effects.normalSummonDiscountPct = Math.min(0.65, effects.normalSummonDiscountPct);
-    effects.premiumLuckPct = Math.min(0.18, effects.premiumLuckPct);
+    effects.premiumLuckPct = Math.min(SUMMON_BALANCE.premiumLuck.cap, effects.premiumLuckPct);
     effects.rebirthSoulPct = Math.min(1.2, effects.rebirthSoulPct);
     effects.bossRewardPct = Math.min(0.8, effects.bossRewardPct);
     effects.debuffResistPct = Math.min(0.65, effects.debuffResistPct);
@@ -2960,11 +2860,12 @@
   function effectiveSummonRates(mode) {
     const rates = { ...SUMMON_MODES[mode].rates };
     if (mode === "premium") {
+      const balance = SUMMON_BALANCE.premiumLuck;
       const luck = treasureEffects().premiumLuckPct;
-      const epicBonus = Math.round(luck * 420) / 10;
-      const legendaryBonus = Math.round(luck * 130) / 10;
+      const epicBonus = Math.round(luck * balance.epicBonusScale * 10) / 10;
+      const legendaryBonus = Math.round(luck * balance.legendaryBonusScale * 10) / 10;
       const totalBonus = epicBonus + legendaryBonus;
-      rates.common = Math.max(20, Math.round((rates.common - totalBonus) * 10) / 10);
+      rates.common = Math.max(balance.minCommon, Math.round((rates.common - totalBonus) * 10) / 10);
       rates.epic = Math.round((rates.epic + epicBonus) * 10) / 10;
       rates.legendary = Math.round((rates.legendary + legendaryBonus) * 10) / 10;
     }

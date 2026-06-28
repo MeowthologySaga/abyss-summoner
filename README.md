@@ -119,6 +119,8 @@ abyss-summoner/
   game/
     index.html
     main.js
+    data/
+      economy-config.js
     styles.css
     host-adapter.js
     mock-host.js
@@ -126,8 +128,6 @@ abyss-summoner/
     screenshots/
     generated/
     audio/
-  economy/
-    diamond-actions.json
   tools/
     generate_audio_assets.py
 ```
