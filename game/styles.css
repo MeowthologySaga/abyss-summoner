@@ -3632,6 +3632,10 @@ body {
     height: calc(var(--mobile-app-height) - var(--mobile-battle-height) - var(--mobile-resource-gap));
   }
 
+  #battleCanvas {
+    height: calc(var(--mobile-battle-height) + var(--mobile-resource-gap));
+  }
+
   .resource-ledger {
     top: auto !important;
     bottom: calc(var(--mobile-app-height) - var(--mobile-battle-height) - var(--mobile-resource-gap) + 4px);

@@ -4558,10 +4558,12 @@
     const stats = calcStats();
     const enemy = app.enemy || enemyForStage(app.save.stage, app.save.floorKill);
     const compact = w < 430;
-    const sceneScale = compact ? Math.max(0.68, Math.min(0.78, h / 340)) : 1;
+    const hudBand = compact ? Math.min(58, Math.max(48, h * 0.18)) : 0;
+    const playH = h - hudBand;
+    const sceneScale = compact ? Math.max(0.68, Math.min(0.78, playH / 340)) : 1;
     const heroX = w * (compact ? 0.25 : 0.24);
     const enemyX = w * (compact ? 0.76 : 0.78);
-    const floorY = h * (compact ? 0.78 : 0.73);
+    const floorY = playH * (compact ? 0.78 : 0.73);
     const bob = app.settings.reducedMotion ? 0 : 1;
 
     app.save.equippedHeroes.forEach((id, index) => {
@@ -4577,7 +4579,7 @@
 
     drawHitImpacts(enemyX, floorY);
     drawDamageTexts(enemyX, floorY, compact);
-    drawCombatStatusPanel(w, h, floorY, enemy, stats, compact);
+    drawCombatStatusPanel(w, h, floorY, enemy, stats, compact, hudBand);
 
     app.attackFlash = Math.max(0, app.attackFlash - 0.016);
     app.enemyFlash = Math.max(0, app.enemyFlash - 0.016);
@@ -4586,9 +4588,9 @@
   function companionBattleSlot(heroX, index, compact, sceneScale = 1) {
     const slots = compact
       ? [
-          { x: -60, y: 20, scale: 0.9 },
-          { x: -24, y: -34, scale: 0.9 },
-          { x: 48, y: 10, scale: 0.9 }
+          { x: -78, y: 22, scale: 1.8 },
+          { x: -38, y: -40, scale: 1.8 },
+          { x: 62, y: 12, scale: 1.8 }
         ]
       : [
           { x: -84, y: 24, scale: 1 },
@@ -4599,11 +4601,11 @@
     return { x: heroX + slot.x * sceneScale, y: slot.y * sceneScale, scale: slot.scale * sceneScale };
   }
 
-  function drawCombatStatusPanel(w, h, floorY, enemy, stats, compact) {
+  function drawCombatStatusPanel(w, h, floorY, enemy, stats, compact, hudBand = 0) {
     const panelW = Math.min(compact ? 188 : 260, w * (compact ? 0.45 : 0.48));
     const panelH = compact ? 48 : 52;
     const panelX = Math.round(w - panelW - (compact ? 8 : 14));
-    const panelY = Math.round(compact ? Math.min(floorY + 22, h - panelH - 8) : floorY + 34);
+    const panelY = Math.round(compact && hudBand > 0 ? h - panelH - 6 : floorY + 34);
     const hpPct = Math.max(0, Math.min(1, enemy.hp / enemy.maxHp));
     const bossBonus = enemy.boss ? 1 + stats.bossDamagePct : 1;
     const effectiveDps = damageAfterEnemyDebuff(stats.dps * bossBonus * bossHighHpMultiplier(enemy, stats) * bossLowHpMultiplier(enemy, stats), enemy, stats);
