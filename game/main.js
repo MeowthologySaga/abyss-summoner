@@ -4529,21 +4529,22 @@
     const stats = calcStats();
     const enemy = app.enemy || enemyForStage(app.save.stage, app.save.floorKill);
     const compact = w < 430;
-    const heroX = w * (compact ? 0.29 : 0.24);
-    const enemyX = w * (compact ? 0.7 : 0.78);
-    const floorY = h * 0.73;
+    const sceneScale = compact ? Math.max(0.74, Math.min(0.84, h / 300)) : 1;
+    const heroX = w * (compact ? 0.25 : 0.24);
+    const enemyX = w * (compact ? 0.76 : 0.78);
+    const floorY = h * (compact ? 0.78 : 0.73);
     const bob = app.settings.reducedMotion ? 0 : 1;
 
     app.save.equippedHeroes.forEach((id, index) => {
       const hero = getData("hero", id);
       if (!hero) return;
-      const slot = companionBattleSlot(heroX, index, compact);
+      const slot = companionBattleSlot(heroX, index, compact, sceneScale);
       drawCompanion(slot.x, floorY + slot.y + Math.sin(t * 3 + index) * 3 * bob, hero, id, slot.scale);
     });
-    drawSummoner(heroX, floorY, activeSkin());
+    drawSummoner(heroX, floorY, activeSkin(), sceneScale);
 
-    drawEnemy(enemyX, floorY - 4 + Math.sin(t * 2) * 3 * bob, enemy);
-    drawProjectiles(heroX, enemyX, floorY, t, compact);
+    drawEnemy(enemyX, floorY - 4 + Math.sin(t * 2) * 3 * bob, enemy, sceneScale);
+    drawProjectiles(heroX, enemyX, floorY, t, compact, sceneScale);
 
     drawHitImpacts(enemyX, floorY);
     drawDamageTexts(enemyX, floorY, compact);
@@ -4553,12 +4554,12 @@
     app.enemyFlash = Math.max(0, app.enemyFlash - 0.016);
   }
 
-  function companionBattleSlot(heroX, index, compact) {
+  function companionBattleSlot(heroX, index, compact, sceneScale = 1) {
     const slots = compact
       ? [
-          { x: -56, y: 24, scale: 1 },
-          { x: -22, y: -38, scale: 1 },
-          { x: 52, y: 12, scale: 1 }
+          { x: -60, y: 20, scale: 0.9 },
+          { x: -24, y: -34, scale: 0.9 },
+          { x: 48, y: 10, scale: 0.9 }
         ]
       : [
           { x: -84, y: 24, scale: 1 },
@@ -4566,7 +4567,7 @@
           { x: 74, y: 12, scale: 1 }
         ];
     const slot = slots[index] || slots[slots.length - 1];
-    return { x: heroX + slot.x, y: slot.y, scale: slot.scale };
+    return { x: heroX + slot.x * sceneScale, y: slot.y * sceneScale, scale: slot.scale * sceneScale };
   }
 
   function drawCombatStatusPanel(w, floorY, enemy, stats, compact) {
@@ -4684,27 +4685,30 @@
     return true;
   }
 
-  function drawSummoner(x, y, skin) {
+  function drawSummoner(x, y, skin, scale = 1) {
     const currentSkin = skin || SKINS[0];
     const frame = Math.floor(performance.now() / 180) % SPRITES.skinSummoner.frameCount;
-    if (drawSheetSprite(skinIdleSheet(currentSkin), SPRITES.skinSummoner, frame, x, y + 6, SPRITES.skinSummoner.height)) {
+    const skinHeight = SPRITES.skinSummoner.height * scale;
+    const summonerHeight = SPRITES.summoner.height * scale;
+    if (drawSheetSprite(skinIdleSheet(currentSkin), SPRITES.skinSummoner, frame, x, y + 6 * scale, skinHeight)) {
       return;
     }
-    if (drawImageSprite(skinImage(currentSkin), x, y + 6, SPRITES.skinSummoner.height)) {
+    if (drawImageSprite(skinImage(currentSkin), x, y + 6 * scale, skinHeight)) {
       return;
     }
 
     const fallbackFrame = frame % SPRITES.summoner.frameCount;
     const flipX = shouldFlipSprite(SPRITE_SOURCE_FACING.summoner, "right");
     const filter = currentSkin?.filter && currentSkin.filter !== "none" ? currentSkin.filter : "";
-    if (drawSheetSprite(summonerSpriteSheet, SPRITES.summoner, fallbackFrame, x, y + 6, SPRITES.summoner.height, { flipX, filter })) {
-      drawSummonerSkinAccent(x, y, currentSkin);
+    if (drawSheetSprite(summonerSpriteSheet, SPRITES.summoner, fallbackFrame, x, y + 6 * scale, summonerHeight, { flipX, filter })) {
+      drawSummonerSkinAccent(x, y, currentSkin, scale);
       return;
     }
 
     ctx.save();
     ctx.translate(Math.round(x), Math.round(y));
     if (flipX) ctx.scale(-1, 1);
+    ctx.scale(scale, scale);
     ctx.fillStyle = "#0b0d10";
     ctx.fillRect(-22, -60, 44, 70);
     ctx.fillStyle = currentSkin?.primary || "#d7c1a7";
@@ -4723,18 +4727,18 @@
     ctx.restore();
   }
 
-  function drawSummonerSkinAccent(x, y, skin) {
+  function drawSummonerSkinAccent(x, y, skin, scale = 1) {
     if (!skin || skin.id === "base") return;
     ctx.save();
     ctx.globalAlpha = 0.86;
     ctx.strokeStyle = skin.accent || "#f5c76a";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3 * scale;
     ctx.beginPath();
-    ctx.moveTo(Math.round(x + 30), Math.round(y - 84));
-    ctx.lineTo(Math.round(x + 43), Math.round(y - 92));
+    ctx.moveTo(Math.round(x + 30 * scale), Math.round(y - 84 * scale));
+    ctx.lineTo(Math.round(x + 43 * scale), Math.round(y - 92 * scale));
     ctx.stroke();
     ctx.fillStyle = skin.primary || "#f5c76a";
-    ctx.fillRect(Math.round(x - 26), Math.round(y - 48), 5, 31);
+    ctx.fillRect(Math.round(x - 26 * scale), Math.round(y - 48 * scale), 5 * scale, 31 * scale);
     ctx.restore();
   }
 
@@ -4768,14 +4772,14 @@
     ctx.restore();
   }
 
-  function drawEnemy(x, y, enemy) {
+  function drawEnemy(x, y, enemy, sceneScale = 1) {
     const normalScaleBoost = enemy.tier === "weak" ? 1.24 : 1.14;
-    const baseScale = (enemy.visualScale || 1) * (enemy.apexBoss ? 1.35 : enemy.boss ? 1.18 : normalScaleBoost);
+    const baseScale = (enemy.visualScale || 1) * (enemy.apexBoss ? 1.35 : enemy.boss ? 1.18 : normalScaleBoost) * sceneScale;
     const flash = app.enemyFlash > 0;
     const frame = enemy.frame ?? ENEMY_SPRITE_BY_ROLE[enemy.role] ?? 0;
     const spriteSpec = enemy.boss ? SPRITES.bosses : SPRITES.enemies;
     const spriteSheet = enemy.boss ? bossSpriteSheet : enemySpriteSheet;
-    const minNormalHeight = Math.max(SPRITES.companions.height * 1.5, SPRITES.enemies.height * 1.3);
+    const minNormalHeight = Math.max(SPRITES.companions.height * 1.5, SPRITES.enemies.height * 1.3) * sceneScale;
     const height = enemy.boss ? spriteSpec.height * baseScale : Math.max(spriteSpec.height * baseScale, minNormalHeight);
     const scale = height / spriteSpec.height;
     const flipX = shouldFlipSprite(SPRITE_SOURCE_FACING.enemy, "left");
@@ -4825,18 +4829,18 @@
     drawImageSprite(bossMarkerSkullImage, x, markerBottom, markerHeight);
   }
 
-  function drawProjectiles(heroX, enemyX, y, t, compact) {
+  function drawProjectiles(heroX, enemyX, y, t, compact, sceneScale = 1) {
     if (app.projectiles.length === 0) return;
     ctx.save();
     app.projectiles.forEach((projectile) => {
       const progressRaw = Math.min(1, projectile.elapsed / projectile.duration);
       const progress = progressRaw * progressRaw * (3 - progressRaw * 2);
       const sourceIndex = Math.max(0, projectile.sourceIndex || 0);
-      const companionSlot = companionBattleSlot(heroX, sourceIndex, compact);
-      const fromX = projectile.source === "summoner" ? heroX + 36 : companionSlot.x + 20;
-      const fromY = projectile.source === "summoner" ? y - 66 : y + companionSlot.y - 42;
-      const targetX = enemyX - 42;
-      const targetY = y - 52 + projectile.yOffset;
+      const companionSlot = companionBattleSlot(heroX, sourceIndex, compact, sceneScale);
+      const fromX = projectile.source === "summoner" ? heroX + 36 * sceneScale : companionSlot.x + 20 * sceneScale;
+      const fromY = projectile.source === "summoner" ? y - 66 * sceneScale : y + companionSlot.y - 42 * sceneScale;
+      const targetX = enemyX - 42 * sceneScale;
+      const targetY = y - 52 * sceneScale + projectile.yOffset * sceneScale;
       const x = fromX + (targetX - fromX) * progress;
       const arc = app.settings.reducedMotion ? -4 : -18;
       const yy = fromY + (targetY - fromY) * progress + Math.sin(progress * Math.PI) * arc;
