@@ -2919,7 +2919,7 @@ button {
 
 .upgrade-item {
   position: relative;
-  grid-template-columns: 78px minmax(0, 1fr);
+  grid-template-columns: 78px minmax(0, 1fr) 118px;
   border: 3px solid #0a1114;
   background:
     linear-gradient(135deg, #f5c76a 0 10px, transparent 10px) top left / 22px 22px no-repeat,
