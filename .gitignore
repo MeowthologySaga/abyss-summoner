@@ -16,3 +16,17 @@ assets/generated/fx/critical-impact/pipeline-meta.json
 assets/generated/fx/critical-impact/prompt-used.txt
 assets/generated/fx/critical-impact/raw-sheet*.png
 assets/generated/fx/critical-impact/sheet-transparent.png
+assets/generated/**/pipeline-meta.json
+assets/generated/**/prompt-used.txt
+assets/generated/**/*.prompt.txt
+assets/generated/**/raw-sheet*.png
+assets/generated/**/raw-idle.png
+assets/generated/**/raw-costume-pack.png
+assets/generated/**/raw.png
+assets/generated/**/clean.png
+assets/generated/**/fitted.png
+assets/generated/**/raw/
+assets/generated/**/raw-v2/
+assets/generated/**/*-raw.png
+assets/generated/backgrounds/backgrounds-v2-contact.png
+assets/generated/backgrounds/backgrounds-v2-manifest.json

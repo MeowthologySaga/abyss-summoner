@@ -14,7 +14,7 @@ Last reviewed: 2026-06-28
 - Source maps included: no
 - Runtime external URLs: none
 - Local preview URL in docs: `http://127.0.0.1:3000/game/index.html`
-- Absolute paths in committed `origin/main`: none found
+- Absolute paths in sanitized branch: none found
 - Absolute paths in current pack text after cleanup: none found
 - Path traversal entries: none found
 - Ignored local logs: `.static-server.*.log`
@@ -23,8 +23,8 @@ Last reviewed: 2026-06-28
 
 Scope reviewed:
 
-- Latest `origin/main` after `git fetch origin`
-- All commits currently reachable from local refs
+- Sanitized `main` branch after generated metadata cleanup
+- All commits reachable after history cleanup
 - Current working tree text files, excluding binary media and `.git`
 - New screenshot and generated boss-marker assets
 
@@ -39,15 +39,15 @@ Checked for:
 Findings:
 
 - No API keys, tokens, passwords, private keys, personal contact information, or database URLs were found.
-- `origin/main` only produced benign matches: README local preview URL and CSS SVG namespace/data URI strings.
-- One uncommitted generated metadata file contained a local absolute input path. It was changed to the relative path `../raw-sheet.png` before documenting the project.
-- Screenshot PNGs and generated boss-marker files were scanned for local path/URL strings; no matches were found after cleanup.
+- The previous generated pipeline metadata/raw asset outputs were removed from the public tree and added to `.gitignore`.
+- The remaining local preview URL is documentation-only: `http://127.0.0.1:3000/game/index.html`.
+- Screenshot PNGs and runtime generated assets were scanned for local path/URL strings; no matches were found after cleanup.
 
 ## Asset Sanitization
 
-- Image assets: generated local PNG/GIF assets and README screenshots
-- Image metadata: no local path strings detected in new screenshot or boss-marker assets
-- Oversized images: no issue found in reviewed screenshots
+- Image assets: final generated runtime PNG/GIF assets and README screenshots
+- Removed public intermediates: `pipeline-meta.json`, prompt text, raw sheets, raw source images, fitted/clean intermediate images
+- Image metadata: no local path strings detected in retained runtime assets
 - Audio assets: local WAV assets included for UI/combat feedback and loops
 - Subtitle HTML/script stripped: no subtitle files included
 

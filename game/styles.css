@@ -2266,6 +2266,7 @@ button {
 
 .upgrade-item {
   position: relative;
+  grid-template-columns: 78px minmax(0, 1fr);
   border: 3px solid #0a1114;
   background:
     linear-gradient(135deg, #f5c76a 0 10px, transparent 10px) top left / 22px 22px no-repeat,
@@ -3185,7 +3186,7 @@ button:disabled .button-cost-icon {
   background: var(--speech-bg);
 }
 
-@media (max-width: 420px) {
+@media (max-width: 620px) {
   .speech-bubble {
     top: 56px;
     left: 8px;
@@ -3209,6 +3210,13 @@ button:disabled .button-cost-icon {
     width: 30px;
     height: 6px;
   }
+}
+
+.item-action {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+  gap: 5px;
 }
 
 /* Mobile browser chrome can make 100vh taller than the visible screen. Keep the
@@ -3760,5 +3768,34 @@ body {
   .resource-ledger .resource-diamond {
     min-height: 22px !important;
     padding: 1px 4px !important;
+  }
+}
+
+/* Narrow phone layout: keep upgrade actions visible instead of pushing them
+   outside the card's right edge. */
+@media (max-width: 420px) {
+  .upgrade-item {
+    grid-template-columns: 48px minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .item-action {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+    gap: 4px;
+  }
+
+  .item-action button {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .button-cost,
+  .button-free {
+    margin-top: 0;
   }
 }

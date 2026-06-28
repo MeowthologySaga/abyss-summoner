@@ -7,19 +7,35 @@ const ui = document.getElementById("ui");
 const modalLayer = document.getElementById("modalLayer");
 const toastLayer = document.getElementById("toastLayer");
 const host = window.createHostAdapter();
+
+function requireSystem(name) {
+  const system = window[name];
+  if (!system) {
+    throw new Error(`${name} must be loaded before main.js`);
+  }
+  return system;
+}
+
+const systems = {
+  battle: requireSystem("ABYSS_SUMMONER_BATTLE"),
+  canvas: requireSystem("ABYSS_SUMMONER_CANVAS"),
+  input: requireSystem("ABYSS_SUMMONER_INPUT"),
+  ui: requireSystem("ABYSS_SUMMONER_UI")
+};
+
 const battleBgImages = BATTLE_BACKGROUNDS.map((background) => ({
   ...background,
-  image: loadImage(background.src)
+  image: systems.canvas.loadImage(background.src)
 }));
-const summonerSpriteSheet = loadImage(ASSETS.summonerSheet);
-const companionSpriteSheet = loadImage(ASSETS.companionSheet);
-const enemySpriteSheet = loadImage(ASSETS.enemySheet);
-const bossSpriteSheet = loadImage(ASSETS.bossSheet);
-const bossMarkerSkullImage = loadImage(ASSETS.bossMarkerSkull);
-const attackBoltSpriteSheet = loadImage(ASSETS.attackBoltSheet);
-const companionProjectileSpriteSheet = loadImage(ASSETS.companionProjectileSheet);
-const hitImpactSpriteSheet = loadImage(ASSETS.hitImpactSheet);
-const criticalIconImage = loadImage(ASSETS.criticalIcon);
+const summonerSpriteSheet = systems.canvas.loadImage(ASSETS.summonerSheet);
+const companionSpriteSheet = systems.canvas.loadImage(ASSETS.companionSheet);
+const enemySpriteSheet = systems.canvas.loadImage(ASSETS.enemySheet);
+const bossSpriteSheet = systems.canvas.loadImage(ASSETS.bossSheet);
+const bossMarkerSkullImage = systems.canvas.loadImage(ASSETS.bossMarkerSkull);
+const attackBoltSpriteSheet = systems.canvas.loadImage(ASSETS.attackBoltSheet);
+const companionProjectileSpriteSheet = systems.canvas.loadImage(ASSETS.companionProjectileSheet);
+const hitImpactSpriteSheet = systems.canvas.loadImage(ASSETS.hitImpactSheet);
+const criticalIconImage = systems.canvas.loadImage(ASSETS.criticalIcon);
 const catalogImageCache = new Map();
 const skinImageCache = new Map();
 const bgm = {
@@ -66,17 +82,17 @@ const app = {
 };
 
 async function init() {
-  bindEvents();
+  systems.input.bindEvents();
   const loaded = await host.save.load(DEFAULT_SAVE);
   app.save = ensureSaveShape(loaded);
   app.pendingOfflineGold = calcOfflineReward(app.save.lastSeenAt);
   grantStarterRoster();
   nextEnemy();
   await refreshBalance();
-  render();
+  systems.ui.render();
   setInterval(tick, 100);
   setInterval(writeSave, 5000);
-  requestAnimationFrame(draw);
+  requestAnimationFrame(systems.canvas.draw);
 }
 
 function tick() {
@@ -84,12 +100,12 @@ function tick() {
   const dt = Math.min(0.5, (now - app.lastTick) / 1000);
   app.lastTick = now;
   updateQuestIncome(dt);
-  updateCombat(dt);
+  systems.battle.updateCombat(dt);
   const boost = activeBoostEffects();
   if ((boost.battleCatalystActive || app.lastBoostRenderActive) && now - app.lastBoostRender > 1000) {
     app.lastBoostRender = now;
     app.lastBoostRenderActive = boost.battleCatalystActive;
-    render();
+    systems.ui.render();
   }
 }
 

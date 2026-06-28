@@ -5,13 +5,13 @@
 **바로 플레이하기:** https://meowthologysaga.github.io/abyss-summoner/
 
 <p align="center">
-  <img src="assets/screenshots/abyss-summoner-loop.gif" width="360" alt="심연의 무명소환사 자동 전투 플레이 장면" />
+  <img src="assets/preview/abyss-summoner-loop.gif" width="360" alt="심연의 무명소환사 자동 전투 플레이 장면" />
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/battle-mobile.png" width="220" alt="자동 전투와 성장 화면" />
-  <img src="assets/screenshots/summon-mobile.png" width="220" alt="소환 화면" />
-  <img src="assets/screenshots/shop-mobile.png" width="220" alt="다이아 상점 화면" />
+  <img src="assets/preview/battle-mobile.png" width="220" alt="자동 전투와 성장 화면" />
+  <img src="assets/preview/summon-mobile.png" width="220" alt="소환 화면" />
+  <img src="assets/preview/shop-mobile.png" width="220" alt="다이아 상점 화면" />
 </p>
 
 ## 한눈에 보기
@@ -62,7 +62,7 @@
 
 | 전투/성장 | 소환 | 동료 편성 | 상점 |
 | --- | --- | --- | --- |
-| <img src="assets/screenshots/battle-mobile.png" width="180" alt="전투와 성장 화면" /> | <img src="assets/screenshots/summon-mobile.png" width="180" alt="소환 화면" /> | <img src="assets/screenshots/heroes-mobile.png" width="180" alt="동료 편성 화면" /> | <img src="assets/screenshots/shop-mobile.png" width="180" alt="상점 화면" /> |
+| <img src="assets/preview/battle-mobile.png" width="180" alt="전투와 성장 화면" /> | <img src="assets/preview/summon-mobile.png" width="180" alt="소환 화면" /> | <img src="assets/preview/heroes-mobile.png" width="180" alt="동료 편성 화면" /> | <img src="assets/preview/shop-mobile.png" width="180" alt="상점 화면" /> |
 
 ## 실행 방법
 
@@ -98,11 +98,12 @@ game/index.html#shop
 
 ## 보안 검수
 
-공개 저장소 배포를 기준으로 GitHub 히스토리와 현재 작업트리를 검사했습니다.
+공개 저장소 배포를 기준으로 GitHub 히스토리와 현재 작업트리를 검사하고, 생성 파이프라인 메타/중간 이미지 산출물은 공개 트리에서 제외했습니다.
 
 - API 키, 토큰, 비밀번호, private key 없음
 - 이메일, 전화번호, 주민번호 패턴 없음
 - 로컬 사용자 폴더 절대경로 없음
+- 실행에 필요 없는 `pipeline-meta.json`, prompt 텍스트, raw/intermediate 이미지는 `.gitignore`로 제외
 - 외부 네트워크 사용 없음
 - `.static-server.*.log`는 `.gitignore`로 제외
 
@@ -138,8 +139,8 @@ abyss-summoner/
     host-adapter.js         # 실제 host/mock host 공통 어댑터
     mock-host.js            # 단독 실행용 mock 지갑/저장소
   assets/
-    screenshots/
-    generated/
+    preview/
+    generated/               # 게임에서 참조하는 최종 런타임 에셋만 유지
     audio/
   tools/
     generate_audio_assets.py

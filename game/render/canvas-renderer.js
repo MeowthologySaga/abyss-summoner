@@ -110,7 +110,7 @@ function drawBattle(width, height) {
   const playH = h - hudBand;
   const sceneScale = compact ? Math.max(0.68, Math.min(0.78, playH / 340)) : 1;
   const heroX = w * (compact ? 0.25 : 0.24);
-  const enemyX = w * (compact ? 0.76 : 0.78);
+  const enemyX = w * (compact ? 0.7 : 0.78);
   const floorY = playH * (compact ? 0.78 : 0.73);
   const bob = app.settings.reducedMotion ? 0 : 1;
 
@@ -150,14 +150,15 @@ function companionBattleSlot(heroX, index, compact, sceneScale = 1) {
 }
 
 function drawCombatStatusPanel(w, h, floorY, enemy, stats, compact, hudBand = 0) {
-  const panelW = Math.min(compact ? 188 : 260, w * (compact ? 0.45 : 0.48));
+  const panelW = compact ? Math.min(176, Math.max(150, w * 0.43)) : Math.min(260, w * 0.48);
   const panelH = compact ? 48 : 52;
-  const panelX = Math.round(w - panelW - (compact ? 8 : 14));
+  const panelX = Math.round(w - panelW - (compact ? 10 : 14));
   const panelY = Math.round(compact && hudBand > 0 ? h - panelH - 6 : floorY + 34);
   const hpPct = Math.max(0, Math.min(1, enemy.hp / enemy.maxHp));
   const bossBonus = enemy.boss ? 1 + stats.bossDamagePct : 1;
   const effectiveDps = damageAfterEnemyDebuff(stats.dps * bossBonus * bossHighHpMultiplier(enemy, stats) * bossLowHpMultiplier(enemy, stats), enemy, stats);
-  const enemyLabel = enemy.name.length > 8 ? `${enemy.name.slice(0, 8)}…` : enemy.name;
+  const labelLimit = compact ? 6 : 8;
+  const enemyLabel = enemy.name.length > labelLimit ? `${enemy.name.slice(0, labelLimit)}…` : enemy.name;
   const enemyKind = enemy.apexBoss ? "100층 보스" : enemy.gateBoss ? "10층 보스" : enemy.boss ? "층 보스" : "일반";
   const roleLabel = ROLES[enemy.role].label;
 
