@@ -435,10 +435,10 @@ function renderSummonPanel() {
 function renderSummonDrawPanel() {
   const normalButton = (kind, count) => {
     const cost = normalSummonCost(kind, count);
-    return `<button class="primary summon-action-btn" data-summon="normal:${kind}:${count}" ${app.save.gold < cost ? "disabled" : ""}>${actionButton(`${count}회`, "coin", cost)}</button>`;
+    return `<button class="primary summon-action-btn" data-summon="normal:${kind}:${count}" ${app.save.gold < cost ? "disabled" : ""}>${renderSummonButtonContent(`${count}회`, "coin", cost)}</button>`;
   };
   const premiumButton = (kind, count) => {
-    return `<button class="premium summon-action-btn" data-summon="premium:${kind}:${count}">${actionButton(`${count}회`, "diamond", ACTION_BY_ID[`summon-${kind}-${count}`].amount)}</button>`;
+    return `<button class="premium summon-action-btn" data-summon="premium:${kind}:${count}">${renderSummonButtonContent(`${count}회`, "diamond", ACTION_BY_ID[`summon-${kind}-${count}`].amount)}</button>`;
   };
   return `
     <div class="summon-draw">
@@ -462,6 +462,14 @@ function renderSummonDrawPanel() {
         ${renderSummonBonusCard()}
       </div>
     </div>
+  `;
+}
+
+function renderSummonButtonContent(label, currency, amount) {
+  const currencyLabel = currency === "diamond" ? "다이아" : "골드";
+  return `
+    <span class="summon-action-main">${label}</span>
+    <span class="summon-action-cost"><i class="res-icon ${currency}"></i><b>${currencyLabel} ${fmt(amount)}</b></span>
   `;
 }
 

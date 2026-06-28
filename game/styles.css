@@ -411,8 +411,63 @@ button.warn {
   min-width: 0;
   min-height: 40px;
   padding: 5px 6px;
+  display: grid;
+  gap: 2px;
+  align-content: center;
   font-size: 12px;
   line-height: 1.08;
+  text-align: center;
+}
+
+button.summon-action-btn.primary {
+  border-color: rgba(245, 199, 106, 0.58);
+  background: linear-gradient(180deg, #5a3516, #2d1d14);
+}
+
+button.summon-action-btn.premium {
+  border-color: rgba(85, 213, 232, 0.55);
+  background: linear-gradient(180deg, #13414c, #0b2029);
+}
+
+.summon-action-main,
+.summon-action-cost {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summon-action-main {
+  color: #fff2bf;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.summon-action-cost {
+  gap: 3px;
+  color: #e7d5a3;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.summon-action-cost .res-icon {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  box-shadow: none;
+}
+
+.summon-action-cost b {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.premium .summon-action-cost {
+  color: #a9efff;
 }
 
 .summon-rate-chips {
@@ -617,7 +672,7 @@ button.warn {
   }
 
   .summon-button-pair {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
   }
 
@@ -3647,11 +3702,9 @@ button:disabled .button-cost-icon {
   }
 }
 
-.item-action {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
-  gap: 5px;
+.upgrade-item .item-action {
+  grid-column: auto;
+  min-width: 0;
 }
 
 /* Mobile browser chrome can make 100vh taller than the visible screen. Keep the
@@ -4003,7 +4056,7 @@ body {
   }
 
   .upgrade-item {
-    grid-template-columns: 46px minmax(0, 1fr) 76px;
+    grid-template-columns: 46px minmax(0, 1fr) 92px;
     gap: 5px;
   }
 
@@ -4206,31 +4259,44 @@ body {
   }
 }
 
-/* Narrow phone layout: keep upgrade actions visible instead of pushing them
-   outside the card's right edge. */
+/* Narrow phone layout: keep upgrade actions in the right column without clipping. */
 @media (max-width: 420px) {
   .upgrade-item {
-    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-columns: 52px minmax(0, 1fr) 104px;
+    gap: 6px;
     align-items: center;
   }
 
-  .item-action {
-    grid-column: 1 / -1;
+  .upgrade-item .item-action {
+    grid-column: auto;
+    min-width: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
-    gap: 4px;
+    grid-template-columns: 1fr;
+    gap: 3px;
   }
 
-  .item-action button {
-    min-height: 34px;
+  .upgrade-item .item-action button {
+    min-height: 44px;
+    padding: 4px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 3px;
+    border-color: rgba(245, 199, 106, 0.62);
+    background:
+      linear-gradient(135deg, #8a2716 0 8px, transparent 8px) top left / 16px 16px no-repeat,
+      linear-gradient(225deg, #8a2716 0 8px, transparent 8px) top right / 16px 16px no-repeat,
+      linear-gradient(315deg, #8a2716 0 8px, transparent 8px) bottom right / 16px 16px no-repeat,
+      linear-gradient(45deg, #8a2716 0 8px, transparent 8px) bottom left / 16px 16px no-repeat,
+      #71313c;
+    color: #fff2bf;
+    text-align: center;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
   }
 
-  .button-cost,
-  .button-free {
+  .upgrade-item .button-cost,
+  .upgrade-item .button-free {
     margin-top: 0;
   }
 }
