@@ -3599,7 +3599,7 @@ body {
   touch-action: manipulation;
 }
 
-/* Final mobile resource HUD: one low game-style rail at the battle/panel edge. */
+/* Final mobile resource HUD: compact left rail, keeping the enemy HP panel clear. */
 .speech-bubble::before,
 .speech-bubble::after {
   content: none !important;
@@ -3628,16 +3628,16 @@ body {
     top: auto !important;
     bottom: calc(var(--mobile-app-height) - var(--mobile-battle-height) + 4px);
     left: 8px;
-    right: 8px;
-    width: auto;
+    right: auto;
+    width: min(188px, calc(50vw - 8px));
     min-width: 0;
-    grid-template-columns: minmax(0, 1.35fr) minmax(46px, 0.42fr) minmax(86px, 0.75fr);
-    gap: 4px;
+    grid-template-columns: minmax(0, 0.58fr) minmax(0, 1fr);
+    gap: 3px 4px;
     align-items: end;
   }
 
   .resource-ledger .resource-coin {
-    grid-column: auto;
+    grid-column: 1 / 3;
     max-width: none;
   }
 
@@ -3652,6 +3652,10 @@ body {
       linear-gradient(135deg, rgba(245, 199, 106, 0.12), transparent 45%),
       rgba(6, 12, 16, 0.82);
     font-size: 13px;
+  }
+
+  .resource-ledger .resource-soul {
+    min-width: 0;
   }
 
   .resource-ledger .res-icon,
@@ -3679,8 +3683,8 @@ body {
 @media (max-width: 370px) {
   .resource-ledger {
     left: 6px;
-    right: 6px;
-    grid-template-columns: minmax(0, 1.2fr) minmax(40px, 0.38fr) minmax(76px, 0.7fr);
+    width: min(172px, calc(50vw - 6px));
+    grid-template-columns: minmax(0, 0.52fr) minmax(0, 1fr);
     gap: 3px;
   }
 
