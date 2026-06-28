@@ -611,6 +611,7 @@ function codexEntries(kind) {
       owned: discovered,
       monsterType: "normal",
       role: enemy.role,
+      firstStage: enemy.firstStage,
       sprite: monsterSpriteData(enemy, "normal"),
       meta: `${zone?.theme || "심연"} / ${enemy.tier === "weak" ? "약한 잡몹" : "일반 잡몹"} / ${ROLES[enemy.role].label}`,
       value: enemy.visualKeywords || "심연 진행 중 반복 출현하는 일반 적입니다.",
@@ -629,6 +630,7 @@ function codexEntries(kind) {
       owned: maxStage >= requiredStage,
       monsterType: "boss",
       role: boss.role,
+      firstStage: requiredStage,
       sprite: monsterSpriteData(boss, "boss"),
       meta: `${zone?.theme || "심연"} / ${bossTypeLabels[boss.type] || "보스"} / ${ROLES[boss.role].label}`,
       value: "각 구간에서 성장 속도를 시험하는 강한 적입니다.",
@@ -646,6 +648,10 @@ function codexSummary(kind) {
     total: entries.length,
     ratio: entries.length ? owned / entries.length : 0
   };
+}
+
+function codexProgressLabel(kind) {
+  return kind === "monsters" ? "발견" : "보유";
 }
 
 function renderCodexFilterButton(option) {
@@ -672,7 +678,7 @@ function renderCodexPanel() {
         <p class="muted">수집한 항목의 보유 효과와 발견 진행도를 확인합니다. 도감은 별도 하단 탭 없이 소환 탭 안에서 관리합니다.</p>
       </div>
       <div class="codex-progress">
-        <strong>${currentLabel} ${summary.owned}/${summary.total}</strong>
+        <strong>${currentLabel} ${codexProgressLabel(kind)} ${summary.owned}/${summary.total}</strong>
         <span>${Math.round(summary.ratio * 100)}%</span>
         <i style="--codex-progress:${summary.ratio}"></i>
       </div>
@@ -681,7 +687,7 @@ function renderCodexPanel() {
       ${CODEX_KIND_FILTERS.map(renderCodexFilterButton).join("")}
     </div>
     <div class="codex-groups">
-      ${renderCodexGroups(entries)}
+      ${kind === "monsters" ? renderMonsterCodexGroups(entries) : renderCodexGroups(entries)}
     </div>
   `;
 }
@@ -705,10 +711,42 @@ function renderCodexGroups(entries) {
   }).join("");
 }
 
+function renderMonsterCodexGroups(entries) {
+  const groups = [
+    { value: "normal", label: "일반 몬스터" },
+    { value: "boss", label: "보스" }
+  ];
+  return groups.map((group) => {
+    const groupEntries = entries.filter((entry) => entry.monsterType === group.value)
+      .sort((a, b) => {
+        const discoveredDiff = Number(b.owned) - Number(a.owned);
+        if (discoveredDiff !== 0) return discoveredDiff;
+        const stageDiff = (a.firstStage || 0) - (b.firstStage || 0);
+        if (stageDiff !== 0) return stageDiff;
+        const rarityDiff = CODEX_RARITY_ORDER.indexOf(a.rarity) - CODEX_RARITY_ORDER.indexOf(b.rarity);
+        if (rarityDiff !== 0) return rarityDiff;
+        return a.name.localeCompare(b.name, "ko-KR");
+      });
+    if (groupEntries.length === 0) return "";
+    const discovered = groupEntries.filter((entry) => entry.owned).length;
+    return `
+      <section class="codex-rarity-section monster-codex-section monster-${group.value}">
+        <div class="codex-rarity-head monster-codex-head">
+          <strong>${group.label}</strong>
+          <span>발견 ${discovered}/${groupEntries.length}</span>
+        </div>
+        <div class="codex-grid">
+          ${groupEntries.map(renderCodexCard).join("")}
+        </div>
+      </section>
+    `;
+  }).join("");
+}
+
 function renderCodexCard(entry) {
   const locked = !entry.owned;
   const displayName = locked && entry.kind === "monsters" ? "미발견" : entry.name;
-  const status = locked ? (entry.kind === "monsters" ? "미발견" : "미획득") : "보유";
+  const status = entry.kind === "monsters" ? (locked ? "미발견" : "발견") : (locked ? "미획득" : "보유");
   const tooltip = [
     displayName,
     entry.meta,
@@ -744,16 +782,16 @@ function renderHeroesPanel() {
       const isEquipped = equipped.has(id);
       const influence = heroInfluence(hero, owned);
       return `
-        <div class="card collection-card rarity-${hero.rarity} ${isEquipped ? "selected" : ""}">
+        <div class="card collection-card hero-card rarity-${hero.rarity} ${isEquipped ? "selected" : ""}">
           <div class="collection-art">${catalogImgTag("heroes", id, hero.name)}</div>
           <div class="collection-copy">
             <h3 class="${rarityClass(hero.rarity)}">${hero.name} Lv.${owned.level}</h3>
             <p class="tiny">${RARITIES[hero.rarity].label} / <span class="${roleClass(hero.role)}">${ROLES[hero.role].label}</span> / 전투력 ${fmt(itemPower("hero", id))}</p>
-            <p class="muted">${isEquipped ? "편성 효과 적용 중: 전투력 100%" : `예비대 효과: 전투력의 ${pct(roster.reserveShare)}를 DPS로 적용`} · ${ROLES[hero.role].bonus}</p>
+            <p class="muted">${isEquipped ? "전열 전투 중" : `예비대 DPS ${pct(roster.reserveShare)}`} · ${ROLES[hero.role].bonus}</p>
             <p class="tiny">보유 효과: ${heroOwnedEffectText(hero, owned.level)}</p>
             ${heroGrowthEffectLines(id)}
             <div class="tiny">${shardProgressText(hero, owned)}</div>
-            <div class="tiny">공명 영향 ${influence.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}</div>
+            <div class="tiny">공명 ${influence.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}</div>
             <button data-equip-hero="${id}">${isEquipped ? "편성 해제" : "편성"}</button>
           </div>
         </div>
@@ -761,30 +799,31 @@ function renderHeroesPanel() {
     })
     .join("");
   return `
-    <div class="split">
+    <div class="hero-panel-head">
       <div>
         <h2>동료 편성</h2>
-        <p class="muted">전열 3명은 직접 전투하고, 나머지 보유 동료는 예비대와 공명으로 항상 성장에 기여합니다.</p>
+        <p class="muted">전열 3명은 직접 전투하고, 나머지는 예비대와 공명으로 기여합니다.</p>
       </div>
       <button data-auto-heroes>추천 편성</button>
     </div>
-    <div class="card">
-      <h3>동료 공명</h3>
-      <p class="muted">조각이 차면 Lv+1 됩니다. Lv+1은 편성 효과와 보유 효과를 함께 올립니다.</p>
-      <div class="grid cols-4">
-        <p class="tiny">수집 ${roster.uniqueCount}/${HEROES.length}</p>
-        <p class="tiny">총 레벨 ${fmt(roster.totalLevels)}</p>
-        <p class="tiny">승급 레벨 ${fmt(roster.duplicateLevels)}</p>
-        <p class="tiny">예비대 DPS ${fmtRate(roster.reserveDps)} (${pct(roster.reserveShare)})</p>
-        <p class="tiny">도감 공격 +${pct(roster.attackPct)}</p>
-        <p class="tiny">희귀도 도감 +${pct(roster.rarityBonus)}</p>
-        <p class="tiny">탱커 보스피해 +${pct(roster.tankBossPct)}</p>
-        <p class="tiny">딜러 피해 +${pct(roster.dpsPct)}</p>
-        <p class="tiny">지원 골드 +${pct(roster.goldPct)}</p>
-        <p class="tiny">저주 보스피해 +${pct(roster.bossDamagePct)}</p>
-      </div>
+    <div class="hero-summary-grid">
+      ${heroSummaryChip("수집", `${roster.uniqueCount}/${HEROES.length}`)}
+      ${heroSummaryChip("전열", `${app.save.equippedHeroes.length}/3`)}
+      ${heroSummaryChip("예비대 DPS", fmtRate(roster.reserveDps))}
+      ${heroSummaryChip("공명 공격", `+${pct(roster.attackPct)}`)}
+      ${heroSummaryChip("레벨/승급", `${fmt(roster.totalLevels)} / ${fmt(roster.duplicateLevels)}`)}
+      ${heroSummaryChip("역할 보너스", `탱 ${pct(roster.tankBossPct)} · 딜 ${pct(roster.dpsPct)}`)}
     </div>
-    <div class="grid cols-3">${cards}</div>
+    <div class="grid cols-3 heroes-grid">${cards}</div>
+  `;
+}
+
+function heroSummaryChip(label, value) {
+  return `
+    <div class="hero-summary-chip">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
   `;
 }
 
