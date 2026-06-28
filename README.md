@@ -110,6 +110,8 @@ game/index.html#shop
 
 ## 프로젝트 구조
 
+게임은 빌드 도구 없이 GitHub Pages에서 바로 실행되는 클래식 브라우저 스크립트 구조입니다. 데이터, 계산, 전투, UI, 캔버스, 입력을 파일 단위로 나누고, `main.js`는 DOM 연결과 초기화 루프만 담당합니다.
+
 ```text
 abyss-summoner/
   manifest.json
@@ -117,13 +119,24 @@ abyss-summoner/
   security-report.md
   GDD.md
   game/
-    index.html
-    main.js
-    data/
-      economy-config.js
+    index.html              # GitHub Pages 진입점
+    main.js                 # DOM 조회, host 연결, init/tick 조립
     styles.css
-    host-adapter.js
-    mock-host.js
+    data/
+      economy-config.js     # 소환, 보물, 상점, 다이아 액션 밸런스
+      catalog-config.js     # 동료, 장비, 적, 배경, 스프라이트 정적 데이터
+    core/
+      state.js              # 저장 기본값, 설정 preference, save shape 보정
+      progression.js        # 성장, 구매, 소환, 환생, 장착 계산
+      battle.js             # 전투 tick, 투사체, 치명타, 처치 보상
+    render/
+      canvas-renderer.js    # 배경, 캐릭터, 적, 이펙트 캔버스 렌더
+    ui/
+      ui-renderer.js        # HUD, 패널, 모달, 상점/소환/도감 HTML 렌더
+    input/
+      events.js             # 클릭, 입력, 스크롤, 키보드 이벤트 바인딩
+    host-adapter.js         # 실제 host/mock host 공통 어댑터
+    mock-host.js            # 단독 실행용 mock 지갑/저장소
   assets/
     screenshots/
     generated/
