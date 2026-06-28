@@ -1,0 +1,11 @@
+.static-server.*.log
+*.log
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+assets/generated/backgrounds/raw-v2/
+assets/generated/catalog-forge-v2/
+assets/generated/icons-v2/

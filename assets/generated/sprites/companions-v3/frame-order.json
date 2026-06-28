@@ -1,0 +1,842 @@
+[
+  {
+    "index": 0,
+    "id": "iron-page",
+    "rarity": "common",
+    "role": "tank",
+    "name": "철서의 시종"
+  },
+  {
+    "index": 1,
+    "id": "grave-archer",
+    "rarity": "common",
+    "role": "dps",
+    "name": "묘지 궁수"
+  },
+  {
+    "index": 2,
+    "id": "candle-nun",
+    "rarity": "common",
+    "role": "support",
+    "name": "촛불 수녀"
+  },
+  {
+    "index": 3,
+    "id": "ash-rat-knight",
+    "rarity": "common",
+    "role": "tank",
+    "name": "잿쥐 기사"
+  },
+  {
+    "index": 4,
+    "id": "bone-knife-boy",
+    "rarity": "common",
+    "role": "dps",
+    "name": "뼈칼 소년"
+  },
+  {
+    "index": 5,
+    "id": "grave-bell-girl",
+    "rarity": "common",
+    "role": "support",
+    "name": "묘종 소녀"
+  },
+  {
+    "index": 6,
+    "id": "black-goat-scribe",
+    "rarity": "rare",
+    "role": "curse",
+    "name": "검은 염소 서기"
+  },
+  {
+    "index": 7,
+    "id": "scarlet-lancer",
+    "rarity": "rare",
+    "role": "dps",
+    "name": "주홍 창기사"
+  },
+  {
+    "index": 8,
+    "id": "bell-shield",
+    "rarity": "rare",
+    "role": "tank",
+    "name": "종탑 방패병"
+  },
+  {
+    "index": 9,
+    "id": "wax-healer",
+    "rarity": "rare",
+    "role": "support",
+    "name": "밀랍 치유사"
+  },
+  {
+    "index": 10,
+    "id": "chain-exorcist",
+    "rarity": "rare",
+    "role": "curse",
+    "name": "사슬 퇴마사"
+  },
+  {
+    "index": 11,
+    "id": "cinder-hunter",
+    "rarity": "rare",
+    "role": "dps",
+    "name": "잿불 사냥꾼"
+  },
+  {
+    "index": 12,
+    "id": "moon-apothecary",
+    "rarity": "epic",
+    "role": "support",
+    "name": "월광 약제사"
+  },
+  {
+    "index": 13,
+    "id": "hex-duelist",
+    "rarity": "epic",
+    "role": "curse",
+    "name": "저주 결투가"
+  },
+  {
+    "index": 14,
+    "id": "saint-ruin",
+    "rarity": "epic",
+    "role": "support",
+    "name": "폐허의 성녀"
+  },
+  {
+    "index": 15,
+    "id": "gallows-captain",
+    "rarity": "epic",
+    "role": "tank",
+    "name": "교수대 대장"
+  },
+  {
+    "index": 16,
+    "id": "red-choir",
+    "rarity": "epic",
+    "role": "dps",
+    "name": "붉은 성가대"
+  },
+  {
+    "index": 17,
+    "id": "moth-oracle",
+    "rarity": "epic",
+    "role": "curse",
+    "name": "나방 예언자"
+  },
+  {
+    "index": 18,
+    "id": "duke-ashen",
+    "rarity": "legendary",
+    "role": "dps",
+    "name": "잿빛 공작"
+  },
+  {
+    "index": 19,
+    "id": "morrow-king",
+    "rarity": "legendary",
+    "role": "tank",
+    "name": "내일 없는 왕"
+  },
+  {
+    "index": 20,
+    "id": "oracle-thorn",
+    "rarity": "legendary",
+    "role": "curse",
+    "name": "가시 예언자"
+  },
+  {
+    "index": 21,
+    "id": "white-lantern",
+    "rarity": "legendary",
+    "role": "support",
+    "name": "백등의 성녀"
+  },
+  {
+    "index": 22,
+    "id": "nameless-bishop",
+    "rarity": "legendary",
+    "role": "curse",
+    "name": "무명의 주교"
+  },
+  {
+    "index": 23,
+    "id": "abyss-marshal",
+    "rarity": "legendary",
+    "role": "tank",
+    "name": "심연 원수"
+  },
+  {
+    "index": 24,
+    "id": "sewer-rat-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "갑각 시궁쥐"
+  },
+  {
+    "index": 25,
+    "id": "sewer-rat-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "칼이빨 시궁쥐"
+  },
+  {
+    "index": 26,
+    "id": "sewer-rat-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "물자쥐 사역마"
+  },
+  {
+    "index": 27,
+    "id": "sewer-rat-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "역병 시궁쥐"
+  },
+  {
+    "index": 28,
+    "id": "wax-slime-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "굳은 촛농 슬라임"
+  },
+  {
+    "index": 29,
+    "id": "wax-slime-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "불붙은 촛농 슬라임"
+  },
+  {
+    "index": 30,
+    "id": "wax-slime-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "제단 촛농 슬라임"
+  },
+  {
+    "index": 31,
+    "id": "wax-slime-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "검은 심지 슬라임"
+  },
+  {
+    "index": 32,
+    "id": "grave-bat-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "무덤날개 박쥐"
+  },
+  {
+    "index": 33,
+    "id": "grave-bat-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "피갈퀴 박쥐"
+  },
+  {
+    "index": 34,
+    "id": "grave-bat-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "초음파 박쥐"
+  },
+  {
+    "index": 35,
+    "id": "grave-bat-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "귀먹은 묘지 박쥐"
+  },
+  {
+    "index": 36,
+    "id": "cracked-skeleton-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "금 간 방패해골"
+  },
+  {
+    "index": 37,
+    "id": "cracked-skeleton-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "녹슨 칼해골"
+  },
+  {
+    "index": 38,
+    "id": "cracked-skeleton-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "뼛가루 시종"
+  },
+  {
+    "index": 39,
+    "id": "cracked-skeleton-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "저주받은 해골머리"
+  },
+  {
+    "index": 40,
+    "id": "bone-grub-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "성골 구더기"
+  },
+  {
+    "index": 41,
+    "id": "bone-grub-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "톱니 뼈벌레"
+  },
+  {
+    "index": 42,
+    "id": "bone-grub-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "뼛가루 운반충"
+  },
+  {
+    "index": 43,
+    "id": "bone-grub-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "묘독 뼈벌레"
+  },
+  {
+    "index": 44,
+    "id": "mold-imp-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "버섯등 임프"
+  },
+  {
+    "index": 45,
+    "id": "mold-imp-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "송곳니 곰팡이 임프"
+  },
+  {
+    "index": 46,
+    "id": "mold-imp-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "포자 주머니 임프"
+  },
+  {
+    "index": 47,
+    "id": "mold-imp-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "검은 포자 임프"
+  },
+  {
+    "index": 48,
+    "id": "gutter-spider-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "하수 갑각거미"
+  },
+  {
+    "index": 49,
+    "id": "gutter-spider-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "갈고리 하수거미"
+  },
+  {
+    "index": 50,
+    "id": "gutter-spider-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "실타래 하수거미"
+  },
+  {
+    "index": 51,
+    "id": "gutter-spider-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "독안개 하수거미"
+  },
+  {
+    "index": 52,
+    "id": "coffin-mite-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "관짝 진드기"
+  },
+  {
+    "index": 53,
+    "id": "coffin-mite-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "못박이 관진드기"
+  },
+  {
+    "index": 54,
+    "id": "coffin-mite-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "목재 갉이 진드기"
+  },
+  {
+    "index": 55,
+    "id": "coffin-mite-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "부패 관진드기"
+  },
+  {
+    "index": 56,
+    "id": "ash-crawler-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "잿더미 기어귀"
+  },
+  {
+    "index": 57,
+    "id": "ash-crawler-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "불씨 기어귀"
+  },
+  {
+    "index": 58,
+    "id": "ash-crawler-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "재받이 사역마"
+  },
+  {
+    "index": 59,
+    "id": "ash-crawler-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "꺼진 불씨 기어귀"
+  },
+  {
+    "index": 60,
+    "id": "grave-crow-tank",
+    "rarity": "common",
+    "role": "tank",
+    "name": "묘비 까마귀"
+  },
+  {
+    "index": 61,
+    "id": "grave-crow-dps",
+    "rarity": "common",
+    "role": "dps",
+    "name": "눈쪼는 까마귀"
+  },
+  {
+    "index": 62,
+    "id": "grave-crow-support",
+    "rarity": "common",
+    "role": "support",
+    "name": "장례 까마귀"
+  },
+  {
+    "index": 63,
+    "id": "grave-crow-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "불길한 까마귀"
+  },
+  {
+    "index": 64,
+    "id": "rust-puppet-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "저주 인형"
+  },
+  {
+    "index": 65,
+    "id": "black-snail-curse",
+    "rarity": "common",
+    "role": "curse",
+    "name": "눈먼 달팽이"
+  },
+  {
+    "index": 66,
+    "id": "bone-miner-tank",
+    "rarity": "rare",
+    "role": "tank",
+    "name": "성골 광부"
+  },
+  {
+    "index": 67,
+    "id": "bone-miner-dps",
+    "rarity": "rare",
+    "role": "dps",
+    "name": "곡괭이 광부"
+  },
+  {
+    "index": 68,
+    "id": "bone-miner-support",
+    "rarity": "rare",
+    "role": "support",
+    "name": "광맥 안내자"
+  },
+  {
+    "index": 69,
+    "id": "bone-miner-curse",
+    "rarity": "rare",
+    "role": "curse",
+    "name": "먼지폐 광부"
+  },
+  {
+    "index": 70,
+    "id": "coffin-bearer-tank",
+    "rarity": "rare",
+    "role": "tank",
+    "name": "관 운반 방패수"
+  },
+  {
+    "index": 71,
+    "id": "coffin-bearer-dps",
+    "rarity": "rare",
+    "role": "dps",
+    "name": "못망치 장의사"
+  },
+  {
+    "index": 72,
+    "id": "coffin-bearer-support",
+    "rarity": "rare",
+    "role": "support",
+    "name": "장례 운반자"
+  },
+  {
+    "index": 73,
+    "id": "coffin-bearer-curse",
+    "rarity": "rare",
+    "role": "curse",
+    "name": "닫힌 관의 속삭임"
+  },
+  {
+    "index": 74,
+    "id": "bell-acolyte-tank",
+    "rarity": "rare",
+    "role": "tank",
+    "name": "종탑 파수시종"
+  },
+  {
+    "index": 75,
+    "id": "bell-acolyte-dps",
+    "rarity": "rare",
+    "role": "dps",
+    "name": "종추 타격수"
+  },
+  {
+    "index": 76,
+    "id": "bell-acolyte-support",
+    "rarity": "rare",
+    "role": "support",
+    "name": "울림 조율사"
+  },
+  {
+    "index": 77,
+    "id": "bell-acolyte-curse",
+    "rarity": "rare",
+    "role": "curse",
+    "name": "깨진 종의 예언자"
+  },
+  {
+    "index": 78,
+    "id": "gill-prisoner-tank",
+    "rarity": "rare",
+    "role": "tank",
+    "name": "아가미 죄수"
+  },
+  {
+    "index": 79,
+    "id": "gill-prisoner-dps",
+    "rarity": "rare",
+    "role": "dps",
+    "name": "물칼 죄수"
+  },
+  {
+    "index": 80,
+    "id": "gill-prisoner-support",
+    "rarity": "rare",
+    "role": "support",
+    "name": "수압 봉합사"
+  },
+  {
+    "index": 81,
+    "id": "gill-prisoner-curse",
+    "rarity": "rare",
+    "role": "curse",
+    "name": "침수 감염자"
+  },
+  {
+    "index": 82,
+    "id": "black-tide-tank",
+    "rarity": "rare",
+    "role": "tank",
+    "name": "검은 조수 방패체"
+  },
+  {
+    "index": 83,
+    "id": "black-tide-dps",
+    "rarity": "rare",
+    "role": "dps",
+    "name": "파도칼 조수체"
+  },
+  {
+    "index": 84,
+    "id": "black-tide-support",
+    "rarity": "rare",
+    "role": "support",
+    "name": "조수 부름꾼"
+  },
+  {
+    "index": 85,
+    "id": "black-tide-curse",
+    "rarity": "rare",
+    "role": "curse",
+    "name": "눈먼 조수의 알"
+  },
+  {
+    "index": 86,
+    "id": "ink-worm-tank",
+    "rarity": "rare",
+    "role": "tank",
+    "name": "두꺼운 잉크벌레"
+  },
+  {
+    "index": 87,
+    "id": "ink-worm-dps",
+    "rarity": "rare",
+    "role": "dps",
+    "name": "글자씹는 벌레"
+  },
+  {
+    "index": 88,
+    "id": "ink-worm-support",
+    "rarity": "rare",
+    "role": "support",
+    "name": "먹물 운반충"
+  },
+  {
+    "index": 89,
+    "id": "ink-worm-curse",
+    "rarity": "rare",
+    "role": "curse",
+    "name": "이름먹는 벌레"
+  },
+  {
+    "index": 90,
+    "id": "page-wraith-tank",
+    "rarity": "rare",
+    "role": "tank",
+    "name": "책등 망령"
+  },
+  {
+    "index": 91,
+    "id": "page-wraith-dps",
+    "rarity": "rare",
+    "role": "dps",
+    "name": "찢긴 페이지 망령"
+  },
+  {
+    "index": 92,
+    "id": "page-wraith-support",
+    "rarity": "rare",
+    "role": "support",
+    "name": "색인 망령"
+  },
+  {
+    "index": 93,
+    "id": "page-wraith-curse",
+    "rarity": "rare",
+    "role": "curse",
+    "name": "금서 속삭임"
+  },
+  {
+    "index": 94,
+    "id": "dream-moth-tank",
+    "rarity": "rare",
+    "role": "tank",
+    "name": "두꺼운 꿈나방"
+  },
+  {
+    "index": 95,
+    "id": "dream-moth-support",
+    "rarity": "rare",
+    "role": "support",
+    "name": "꿈길 안내나방"
+  },
+  {
+    "index": 96,
+    "id": "moon-werewolf-tank",
+    "rarity": "epic",
+    "role": "tank",
+    "name": "달빛 갑주 늑대인간"
+  },
+  {
+    "index": 97,
+    "id": "moon-werewolf-dps",
+    "rarity": "epic",
+    "role": "dps",
+    "name": "붉은 달 웨어울프"
+  },
+  {
+    "index": 98,
+    "id": "moon-werewolf-support",
+    "rarity": "epic",
+    "role": "support",
+    "name": "무리 부름 늑대"
+  },
+  {
+    "index": 99,
+    "id": "moon-werewolf-curse",
+    "rarity": "epic",
+    "role": "curse",
+    "name": "월식 저주늑대"
+  },
+  {
+    "index": 100,
+    "id": "star-dust-tank",
+    "rarity": "epic",
+    "role": "tank",
+    "name": "별먼지 갑각사도"
+  },
+  {
+    "index": 101,
+    "id": "star-dust-dps",
+    "rarity": "epic",
+    "role": "dps",
+    "name": "혜성발톱 사도"
+  },
+  {
+    "index": 102,
+    "id": "star-dust-support",
+    "rarity": "epic",
+    "role": "support",
+    "name": "성좌 기록사"
+  },
+  {
+    "index": 103,
+    "id": "star-dust-curse",
+    "rarity": "epic",
+    "role": "curse",
+    "name": "별빛 광신자"
+  },
+  {
+    "index": 104,
+    "id": "glass-constellation-tank",
+    "rarity": "epic",
+    "role": "tank",
+    "name": "유리 성좌 파수체"
+  },
+  {
+    "index": 105,
+    "id": "glass-constellation-dps",
+    "rarity": "epic",
+    "role": "dps",
+    "name": "파편별 검사"
+  },
+  {
+    "index": 106,
+    "id": "glass-constellation-support",
+    "rarity": "epic",
+    "role": "support",
+    "name": "별자리 조율사"
+  },
+  {
+    "index": 107,
+    "id": "glass-constellation-curse",
+    "rarity": "epic",
+    "role": "curse",
+    "name": "깨진 성좌의 눈"
+  },
+  {
+    "index": 108,
+    "id": "red-oath-tank",
+    "rarity": "epic",
+    "role": "tank",
+    "name": "붉은 조약 기사"
+  },
+  {
+    "index": 109,
+    "id": "red-oath-dps",
+    "rarity": "epic",
+    "role": "dps",
+    "name": "피서약 처형자"
+  },
+  {
+    "index": 110,
+    "id": "red-oath-support",
+    "rarity": "epic",
+    "role": "support",
+    "name": "조약 서기관"
+  },
+  {
+    "index": 111,
+    "id": "red-oath-curse",
+    "rarity": "epic",
+    "role": "curse",
+    "name": "봉인 위반자"
+  },
+  {
+    "index": 112,
+    "id": "nameless-apostle-tank",
+    "rarity": "epic",
+    "role": "tank",
+    "name": "무명 사도 방패체"
+  },
+  {
+    "index": 113,
+    "id": "nameless-apostle-dps",
+    "rarity": "epic",
+    "role": "dps",
+    "name": "무명 사도 칼날체"
+  },
+  {
+    "index": 114,
+    "id": "sleeping-star-tank",
+    "rarity": "legendary",
+    "role": "tank",
+    "name": "잠든 성좌의 파편"
+  },
+  {
+    "index": 115,
+    "id": "sleeping-star-dps",
+    "rarity": "legendary",
+    "role": "dps",
+    "name": "별을 베는 사냥꾼"
+  },
+  {
+    "index": 116,
+    "id": "sleeping-star-support",
+    "rarity": "legendary",
+    "role": "support",
+    "name": "꿈을 엮는 성좌"
+  },
+  {
+    "index": 117,
+    "id": "sleeping-star-curse",
+    "rarity": "legendary",
+    "role": "curse",
+    "name": "눈먼 별의 대리자"
+  },
+  {
+    "index": 118,
+    "id": "closed-name-dps",
+    "rarity": "legendary",
+    "role": "dps",
+    "name": "닫힌 이름의 칼날"
+  },
+  {
+    "index": 119,
+    "id": "closed-name-support",
+    "rarity": "legendary",
+    "role": "support",
+    "name": "닫힌 이름의 사제"
+  }
+]
