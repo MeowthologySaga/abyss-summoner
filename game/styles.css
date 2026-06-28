@@ -3583,3 +3583,18 @@ body {
     min-height: 38px;
   }
 }
+
+.panel {
+  overflow-anchor: none;
+  overscroll-behavior-y: contain;
+}
+
+.panel,
+.panel * {
+  touch-action: pan-y;
+}
+
+.nav-row,
+.nav-row * {
+  touch-action: manipulation;
+}

@@ -1251,6 +1251,9 @@
     lastBoostRender: 0,
     lastBoostRenderActive: false,
     panelScroll: {},
+    panelScrollHoldUntil: 0,
+    panelPointerScroll: null,
+    panelRenderResumeTimer: null,
     projectiles: [],
     hitImpacts: [],
     damageTexts: [],
@@ -3478,13 +3481,32 @@
     app.panelScroll[tab] = panel.scrollTop;
   }
 
+  function panelScrollHoldRemaining() {
+    return Math.max(0, (app.panelScrollHoldUntil || 0) - performance.now());
+  }
+
+  function scheduleDeferredRender(delay = 0) {
+    if (app.panelRenderResumeTimer) window.clearTimeout(app.panelRenderResumeTimer);
+    app.panelRenderResumeTimer = window.setTimeout(() => {
+      app.panelRenderResumeTimer = null;
+      flushDeferredRender();
+    }, Math.max(0, delay));
+  }
+
+  function holdPanelScrollRender(ms = 320) {
+    app.panelScrollHoldUntil = Math.max(app.panelScrollHoldUntil || 0, performance.now() + ms);
+    if (app.deferredRender) scheduleDeferredRender(panelScrollHoldRemaining() + 24);
+  }
+
   function restorePanelScroll() {
     const panel = ui.querySelector(".panel");
     if (!panel) return;
-    const savedTop = app.panelScroll[app.tab] || 0;
+    const tab = app.tab;
+    const savedTop = app.panelScroll[tab] || 0;
     if (savedTop <= 0) return;
     const applyScroll = () => {
-      const currentPanel = ui.querySelector(`.panel[data-panel-tab="${app.tab}"]`);
+      if (Math.abs((app.panelScroll[tab] || 0) - savedTop) > 0.5) return;
+      const currentPanel = ui.querySelector(`.panel[data-panel-tab="${tab}"]`);
       if (currentPanel) {
         const maxTop = Math.max(0, currentPanel.scrollHeight - currentPanel.clientHeight);
         currentPanel.scrollTop = Math.min(savedTop, maxTop);
@@ -3551,6 +3573,11 @@
 
   function flushDeferredRender() {
     if (!app.deferredRender) return;
+    const holdRemaining = panelScrollHoldRemaining();
+    if (holdRemaining > 0) {
+      scheduleDeferredRender(holdRemaining + 24);
+      return;
+    }
     app.deferredRender = false;
     render(true);
   }
@@ -3564,8 +3591,10 @@
   }
 
   function render(force = false) {
-    if (!force && app.inputRenderGuard) {
+    const holdRemaining = panelScrollHoldRemaining();
+    if (!force && (app.inputRenderGuard || holdRemaining > 0)) {
       app.deferredRender = true;
+      if (holdRemaining > 0) scheduleDeferredRender(holdRemaining + 24);
       return;
     }
     rememberPanelScroll();
@@ -4978,9 +5007,39 @@
 
   function rememberPanelScrollFromEvent(event) {
     const target = event.target instanceof Element ? event.target : null;
-    if (!target || !target.classList.contains("panel")) return;
-    const tab = target.dataset.panelTab || app.tab;
-    app.panelScroll[tab] = target.scrollTop;
+    const panel = target?.closest(".panel");
+    if (!panel) return;
+    const tab = panel.dataset.panelTab || app.tab;
+    app.panelScroll[tab] = panel.scrollTop;
+    holdPanelScrollRender(260);
+  }
+
+  function beginPanelPointerScroll(event) {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target?.closest(".panel")) return;
+    app.panelPointerScroll = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      active: false
+    };
+  }
+
+  function trackPanelPointerScroll(event) {
+    const pointer = app.panelPointerScroll;
+    if (!pointer || pointer.id !== event.pointerId) return;
+    const movedY = Math.abs(event.clientY - pointer.y);
+    const movedX = Math.abs(event.clientX - pointer.x);
+    if (movedY < 6 && movedX < 8) return;
+    pointer.active = true;
+    holdPanelScrollRender(360);
+  }
+
+  function endPanelPointerScroll(event) {
+    const pointer = app.panelPointerScroll;
+    if (!pointer || pointer.id !== event.pointerId) return;
+    if (pointer.active) holdPanelScrollRender(460);
+    app.panelPointerScroll = null;
   }
 
   function routePanelWheel(event) {
@@ -5013,6 +5072,7 @@
     }
     panel.scrollTop = nextTop;
     app.panelScroll[app.tab] = panel.scrollTop;
+    holdPanelScrollRender(180);
     event.preventDefault();
   }
 
@@ -5022,8 +5082,12 @@
       (event) => beginInputRenderGuard(event.target),
       { capture: true }
     );
+    document.addEventListener("pointerdown", beginPanelPointerScroll, { capture: true });
+    document.addEventListener("pointermove", trackPanelPointerScroll, { capture: true, passive: true });
     document.addEventListener("pointerup", endInputRenderGuard, { capture: true });
+    document.addEventListener("pointerup", endPanelPointerScroll, { capture: true });
     document.addEventListener("pointercancel", endInputRenderGuard, { capture: true });
+    document.addEventListener("pointercancel", endPanelPointerScroll, { capture: true });
     window.addEventListener("blur", () => {
       app.inputRenderGuard = false;
       flushDeferredRender();
