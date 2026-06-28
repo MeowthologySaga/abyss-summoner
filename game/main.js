@@ -441,6 +441,7 @@
     attackBoltSheet: "../assets/generated/fx/abyss-bolt/sheet-transparent.png",
     companionProjectileSheet: "../assets/generated/fx/companion-projectiles-v2/sheet-transparent.png?v=20260627-projectilesv2",
     hitImpactSheet: "../assets/generated/fx/abyss-impact/sheet-transparent.png",
+    criticalIcon: "../assets/generated/fx/critical-impact/critical-icon.png?v=20260628-criticalicon5",
     audio: {
       dungeonBgm: "../assets/audio/abyss-dungeon-loop.wav?v=20260627-combat-sfx1",
       bossBgm: "../assets/audio/abyss-boss-loop.wav?v=20260627-combat-sfx1",
@@ -1223,6 +1224,7 @@
   const attackBoltSpriteSheet = loadImage(ASSETS.attackBoltSheet);
   const companionProjectileSpriteSheet = loadImage(ASSETS.companionProjectileSheet);
   const hitImpactSpriteSheet = loadImage(ASSETS.hitImpactSheet);
+  const criticalIconImage = loadImage(ASSETS.criticalIcon);
   const catalogImageCache = new Map();
   const skinImageCache = new Map();
   const bgm = {
@@ -4907,10 +4909,10 @@
     app.hitImpacts.forEach((impact, index) => {
       const progress = Math.min(1, impact.elapsed / impact.duration);
       const frame = Math.min(SPRITES.hitImpact.frameCount - 1, Math.floor(progress * SPRITES.hitImpact.frameCount));
-      ctx.globalAlpha = 0.86 * (1 - progress * 0.35);
       const x = enemyX - 38 + ((index * 11) % 19) - 9;
       const yy = y - 48 + impact.yOffset;
-      const impactScale = impact.critical ? 1.08 : 1;
+      const impactScale = impact.critical ? 0.88 : 1;
+      ctx.globalAlpha = (impact.critical ? 0.38 : 0.86) * (1 - progress * 0.35);
       if (!drawSheetSprite(hitImpactSpriteSheet, SPRITES.hitImpact, frame, x, yy, SPRITES.hitImpact.height * (0.82 + progress * 0.25) * impactScale)) {
         ctx.fillStyle = impact.color || "#f5c76a";
         ctx.beginPath();
@@ -4920,36 +4922,13 @@
       if (impact.critical) {
         const cx = x;
         const cy = yy - 24;
-        const radius = 10 + progress * 18;
-        ctx.globalAlpha = 0.62 * (1 - progress);
-        ctx.strokeStyle = "rgba(255, 224, 138, 0.92)";
-        ctx.lineWidth = 2.5;
+        const radius = 8 + progress * 12;
+        ctx.globalAlpha = 0.34 * (1 - progress);
+        ctx.strokeStyle = "rgba(255, 224, 138, 0.72)";
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
         ctx.stroke();
-        const slashAlpha = Math.max(0, 1 - progress / 0.68);
-        if (slashAlpha > 0) {
-          const cut = 1 - progress * 0.24;
-          ctx.lineCap = "round";
-          ctx.globalAlpha = 0.88 * slashAlpha;
-          ctx.strokeStyle = "rgba(255, 246, 189, 0.95)";
-          ctx.lineWidth = 4.5;
-          ctx.beginPath();
-          ctx.moveTo(cx - 18 * cut, cy + 10 * cut);
-          ctx.lineTo(cx + 16 * cut, cy - 9 * cut);
-          ctx.moveTo(cx - 9 * cut, cy + 16 * cut);
-          ctx.lineTo(cx + 20 * cut, cy - 1 * cut);
-          ctx.stroke();
-          ctx.globalAlpha = 0.9 * slashAlpha;
-          ctx.strokeStyle = "rgba(245, 158, 11, 0.92)";
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(cx - 16 * cut, cy + 9 * cut);
-          ctx.lineTo(cx + 14 * cut, cy - 8 * cut);
-          ctx.moveTo(cx - 7 * cut, cy + 14 * cut);
-          ctx.lineTo(cx + 17 * cut, cy);
-          ctx.stroke();
-        }
       }
     });
     ctx.restore();
@@ -4975,23 +4954,23 @@
       ctx.strokeStyle = "rgba(0, 0, 0, 0.78)";
       if (isCritical) {
         const width = ctx.measureText(amountText).width;
-        const sparkX = x - width * 0.5 - 9;
-        const sparkY = yy - fontSize * 0.34;
-        const spark = Math.max(0, 1 - progress * 1.5);
-        if (spark > 0) {
-          ctx.save();
-          ctx.globalAlpha *= spark;
+        const iconHeight = compact ? 20 : 24;
+        const iconX = x - width * 0.5 - 9;
+        const iconY = yy - fontSize * 0.34 + iconHeight * 0.5;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, 1 - progress * 1.05);
+        if (!drawImageSprite(criticalIconImage, iconX, iconY, iconHeight)) {
           ctx.strokeStyle = "rgba(255, 232, 138, 0.95)";
           ctx.lineWidth = compact ? 1.8 : 2.2;
           ctx.lineCap = "round";
           ctx.beginPath();
-          ctx.moveTo(sparkX - 5, sparkY);
-          ctx.lineTo(sparkX + 5, sparkY);
-          ctx.moveTo(sparkX, sparkY - 5);
-          ctx.lineTo(sparkX, sparkY + 5);
+          ctx.moveTo(iconX - 7, iconY - iconHeight + 5);
+          ctx.lineTo(iconX + 7, iconY - 5);
+          ctx.moveTo(iconX - 7, iconY - 5);
+          ctx.lineTo(iconX + 7, iconY - iconHeight + 5);
           ctx.stroke();
-          ctx.restore();
         }
+        ctx.restore();
         ctx.strokeStyle = "rgba(42, 14, 0, 0.84)";
         ctx.lineWidth = 6;
       }
