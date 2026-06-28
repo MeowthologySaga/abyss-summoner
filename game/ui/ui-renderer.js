@@ -421,11 +421,11 @@ function renderSummonPanel() {
     <div class="summon-subnav" role="group" aria-label="소환 메뉴">
       <button class="${app.summonView === "summon" ? "active" : ""}" data-summon-view="summon" aria-pressed="${app.summonView === "summon"}">
         <strong>뽑기</strong>
-        <span>일반/프리미엄 소환</span>
+        <span>소환 실행</span>
       </button>
       <button class="${app.summonView === "codex" ? "active" : ""}" data-summon-view="codex" aria-pressed="${app.summonView === "codex"}">
         <strong>도감</strong>
-        <span>수집률과 보유 효과</span>
+        <span>수집/효과</span>
       </button>
     </div>
     ${app.summonView === "codex" ? renderCodexPanel() : renderSummonDrawPanel()}
@@ -435,64 +435,123 @@ function renderSummonPanel() {
 function renderSummonDrawPanel() {
   const normalButton = (kind, count) => {
     const cost = normalSummonCost(kind, count);
-    return `<button class="primary" data-summon="normal:${kind}:${count}" ${app.save.gold < cost ? "disabled" : ""}>${actionButton(`일반 ${count}회`, "coin", cost)}</button>`;
+    return `<button class="primary summon-action-btn" data-summon="normal:${kind}:${count}" ${app.save.gold < cost ? "disabled" : ""}>${actionButton(`${count}회`, "coin", cost)}</button>`;
   };
   const premiumButton = (kind, count) => {
-    return `<button class="premium" data-summon="premium:${kind}:${count}">${actionButton(`프리미엄 ${count}회`, "diamond", ACTION_BY_ID[`summon-${kind}-${count}`].amount)}</button>`;
+    return `<button class="premium summon-action-btn" data-summon="premium:${kind}:${count}">${actionButton(`${count}회`, "diamond", ACTION_BY_ID[`summon-${kind}-${count}`].amount)}</button>`;
   };
   return `
-    <div class="split">
+    <div class="summon-draw">
+      <div class="summon-draw-head">
+        <div>
+          <p class="panel-kicker">소환</p>
+          <h2>심연 소환</h2>
+          <p class="muted">골드/다이아로 소환합니다. 보유 효과는 계속 누적됩니다.</p>
+        </div>
+        <div class="summon-wallet" aria-label="보유 재화">
+          <span><i class="res-icon coin"></i><strong>${fmt(app.save.gold)}</strong></span>
+          <span><i class="res-icon diamond"></i><strong>${fmt(app.walletBalance)}</strong></span>
+        </div>
+      </div>
+      <div class="summon-mode-grid">
+        ${renderSummonModeCard("normal", normalButton)}
+        ${renderSummonModeCard("premium", premiumButton)}
+      </div>
+      <div class="summon-info-grid">
+        ${renderSummonPityPanel()}
+        ${renderSummonBonusCard()}
+      </div>
+    </div>
+  `;
+}
+
+function renderSummonModeCard(mode, buttonFor) {
+  const premium = mode === "premium";
+  const label = premium ? "프리미엄 소환" : "일반 소환";
+  const currency = premium ? "다이아" : "골드";
+  const desc = premium ? "Epic/Legendary 확률이 더 높습니다." : "기본 성장 재료를 안정적으로 모읍니다.";
+  return `
+    <article class="summon-mode-card ${premium ? "premium" : "normal"}">
+      <div class="summon-mode-head">
+        <div>
+          <strong>${label}</strong>
+          <span>${desc}</span>
+        </div>
+        <b>${currency}</b>
+      </div>
+      <div class="summon-kind-list">
+        ${renderSummonKindRow("hero", "동료", "heroes", "white-lantern", buttonFor)}
+        ${renderSummonKindRow("gear", "장비", "gear", "king-eater", buttonFor)}
+      </div>
+      <div class="summon-rate-chips" aria-label="${label} 확률">
+        ${renderSummonRateChips(mode)}
+      </div>
+    </article>
+  `;
+}
+
+function renderSummonKindRow(kind, label, assetKind, assetId, buttonFor) {
+  return `
+    <div class="summon-kind-row">
+      <div class="summon-kind-title">
+        <span class="summon-kind-thumb">${catalogImgTag(assetKind, assetId, "")}</span>
+        <strong>${label}</strong>
+      </div>
+      <div class="summon-button-pair">
+        ${buttonFor(kind, 1)}
+        ${buttonFor(kind, 10)}
+      </div>
+    </div>
+  `;
+}
+
+function renderSummonRateChips(mode) {
+  const rates = effectiveSummonRates(mode);
+  return ["common", "rare", "epic", "legendary"].map((rarity) => `
+    <span class="summon-rate-chip rarity-${rarity}">
+      <b>${RARITIES[rarity].label}</b>
+      <i>${rates[rarity]}%</i>
+    </span>
+  `).join("");
+}
+
+function renderSummonPityPanel() {
+  return `
+    <section class="summon-meter-card" aria-label="소환 천장">
+      <div class="summon-section-label">
+        <strong>천장</strong>
+        <span>확정 보상까지의 진행도</span>
+      </div>
+      <div class="summon-pity-list">
+        ${renderSummonPityRow("일반 동료", app.save.normalPity.hero, NORMAL_PITY)}
+        ${renderSummonPityRow("일반 장비", app.save.normalPity.gear, NORMAL_PITY)}
+        ${renderSummonPityRow("프리미엄 동료", app.save.pity.hero, MAX_PITY)}
+        ${renderSummonPityRow("프리미엄 장비", app.save.pity.gear, MAX_PITY)}
+      </div>
+    </section>
+  `;
+}
+
+function renderSummonPityRow(label, value, max) {
+  const progress = Math.max(0, Math.min(100, Math.round((value / max) * 100)));
+  return `
+    <div class="summon-pity-row">
+      <span>${label}</span>
+      <em class="summon-pity-bar" aria-hidden="true"><i style="--pity-progress:${progress}%"></i></em>
+      <strong>${value}/${max}</strong>
+    </div>
+  `;
+}
+
+function renderSummonBonusCard() {
+  return `
+    <section class="summon-bonus-card">
+      <div class="summon-bonus-icon">${catalogImgTag("heroes", "white-lantern", "")}</div>
       <div>
-        <h2>심연 소환</h2>
-        <p class="muted">골드는 일반 소환, 다이아는 프리미엄 소환입니다. 프리미엄은 Epic/Legendary 확률이 더 높습니다.</p>
+        <strong>동료 계약</strong>
+        <p>편성하지 않은 동료도 예비대와 공명으로 보유 효과가 반영됩니다.</p>
       </div>
-      <div class="card">
-        <div class="tiny">일반 동료 천장 ${app.save.normalPity.hero}/${NORMAL_PITY} / 장비 ${app.save.normalPity.gear}/${NORMAL_PITY}</div>
-        <div class="tiny">프리미엄 동료 천장 ${app.save.pity.hero}/${MAX_PITY} / 장비 ${app.save.pity.gear}/${MAX_PITY}</div>
-        <div class="tiny">일반 확률 ${summonRateText("normal")}</div>
-        <div class="tiny">프리미엄 확률 ${summonRateText("premium")}</div>
-      </div>
-    </div>
-    <div class="grid cols-2">
-      <div class="card summon-card">
-        <div class="summon-art"><img src="${catalogAsset("heroes", "white-lantern")}" alt="" /></div>
-        <div class="summon-copy">
-          <h3>동료 계약</h3>
-          <p class="muted">전열 3명 외의 동료도 예비대와 공명으로 반영됩니다. 승급 레벨이 오를수록 전체 보너스가 커집니다.</p>
-        </div>
-        <div class="summon-lanes">
-          <div class="summon-lane">
-            <strong>일반 뽑기</strong>
-            <span>골드 사용 · 낮은 희귀 확률</span>
-            <div class="row">${normalButton("hero", 1)}${normalButton("hero", 10)}</div>
-          </div>
-          <div class="summon-lane premium-lane">
-            <strong>프리미엄 뽑기</strong>
-            <span>다이아 사용 · Epic/Legendary 확률 상승</span>
-            <div class="row">${premiumButton("hero", 1)}${premiumButton("hero", 10)}</div>
-          </div>
-        </div>
-      </div>
-      <div class="card summon-card">
-        <div class="summon-art"><img src="${catalogAsset("gear", "king-eater")}" alt="" /></div>
-        <div class="summon-copy">
-          <h3>장비 의식</h3>
-          <p class="muted">무기, 갑옷, 유물을 뽑아 주인공 전투력을 끌어올립니다.</p>
-        </div>
-        <div class="summon-lanes">
-          <div class="summon-lane">
-            <strong>일반 뽑기</strong>
-            <span>골드 사용 · 낮은 희귀 확률</span>
-            <div class="row">${normalButton("gear", 1)}${normalButton("gear", 10)}</div>
-          </div>
-          <div class="summon-lane premium-lane">
-            <strong>프리미엄 뽑기</strong>
-            <span>다이아 사용 · Epic/Legendary 확률 상승</span>
-            <div class="row">${premiumButton("gear", 1)}${premiumButton("gear", 10)}</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </section>
   `;
 }
 
