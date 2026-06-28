@@ -2,6 +2,8 @@
 
 심연의 층을 자동으로 돌파하며 동료를 소환하고 장비를 맞추는 다크 판타지 방치 성장 RPG입니다. 플레이어는 보스에게 막힐 때마다 강화, 소환, 환생 중 다음 성장 방향을 선택해 더 깊은 층으로 내려갑니다.
 
+**바로 플레이하기:** https://meowthologysaga.github.io/abyss-summoner/
+
 <p align="center">
   <img src="assets/screenshots/abyss-summoner-loop.gif" width="360" alt="심연의 무명소환사 자동 전투 플레이 장면" />
 </p>
@@ -63,6 +65,12 @@
 | <img src="assets/screenshots/battle-mobile.png" width="180" alt="전투와 성장 화면" /> | <img src="assets/screenshots/summon-mobile.png" width="180" alt="소환 화면" /> | <img src="assets/screenshots/heroes-mobile.png" width="180" alt="동료 편성 화면" /> | <img src="assets/screenshots/shop-mobile.png" width="180" alt="상점 화면" /> |
 
 ## 실행 방법
+
+GitHub Pages가 활성화되어 있으면 아래 링크에서 바로 실행됩니다.
+
+```text
+https://meowthologysaga.github.io/abyss-summoner/
+```
 
 브라우저에서 아래 파일을 열면 바로 실행됩니다.
 
