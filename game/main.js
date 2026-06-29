@@ -63,6 +63,7 @@ const app = {
   lastQuestGoldRender: 0,
   lastBoostRender: 0,
   lastBoostRenderActive: false,
+  effectTooltipId: null,
   panelScroll: {},
   panelScrollHoldUntil: 0,
   panelPointerScroll: null,

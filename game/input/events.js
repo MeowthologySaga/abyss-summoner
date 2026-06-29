@@ -137,7 +137,19 @@ function bindEvents() {
     flushDeferredRender();
   });
   document.addEventListener("click", async (event) => {
-    const target = event.target instanceof Element ? event.target.closest("button") : null;
+    const eventTarget = event.target instanceof Element ? event.target : null;
+    const effectButton = eventTarget?.closest("[data-effect-group]");
+    if (effectButton) {
+      const nextId = effectButton.dataset.effectGroup;
+      app.effectTooltipId = app.effectTooltipId === nextId ? null : nextId;
+      render();
+      return;
+    }
+    const target = eventTarget?.closest("button") || null;
+    if (app.effectTooltipId && !eventTarget?.closest(".effect-popover")) {
+      app.effectTooltipId = null;
+      if (!target) render();
+    }
     if (!target) return;
     if (target.dataset.upgradeStep) {
       setUpgradeStep(target.dataset.upgradeStep);
@@ -230,6 +242,11 @@ function bindEvents() {
   document.addEventListener("scroll", rememberPanelScrollFromEvent, true);
   document.addEventListener("wheel", routePanelWheel, { passive: false });
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && app.effectTooltipId) {
+      app.effectTooltipId = null;
+      render();
+      return;
+    }
     if (event.key === "Escape" && modalLayer.innerHTML) modalLayer.innerHTML = "";
   });
   document.addEventListener(

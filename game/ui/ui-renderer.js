@@ -68,44 +68,121 @@ function renderActiveBuffChips() {
 }
 
 function renderCombatEffectRail(stats, enemy) {
-  const chips = [];
+  const groups = buildCombatEffectGroups(stats, enemy);
+  const selected = groups.find((group) => group.id === app.effectTooltipId) || null;
+  const chips = groups.map((group) => renderCombatEffectOrb(group)).join("");
+  const popover = selected ? renderCombatEffectPopover(selected) : "";
+  return `<div class="effect-rail">${chips}${popover}</div>`;
+}
+
+function buildCombatEffectGroups(stats, enemy) {
   const boost = activeBoostEffects();
-  if (boost.battleCatalystActive) {
-    const progress = Math.max(0, Math.min(1, boost.battleCatalystRemaining / (BATTLE_CATALYST_DURATION_MS / 1000)));
-    chips.push(`
-      <span class="effect-orb ally" data-tooltip="아군 버프&#10;전투 촉매&#10;전체 피해 +20% / 공격속도 +20%&#10;남은 시간 ${formatDuration(boost.battleCatalystRemaining)}" aria-label="전투 촉매">
-        <b>촉</b>
-        <i style="--buff-progress:${progress}"></i>
-      </span>
-    `);
-  }
   const debuff = enemyDebuffEffects(enemy, stats);
-  if (debuff.damageCutPct > 0) {
-    const resistLine = debuff.resistPct > 0 ? `&#10;압박 저항 ${pct(debuff.resistPct)} 적용` : "";
-    chips.push(`
-      <span class="effect-orb enemy" data-tooltip="적군 디버프&#10;${debuff.label}&#10;아군 최종 피해 -${pct(debuff.damageCutPct)}${resistLine}&#10;1000층 이후 점점 강해집니다." aria-label="${debuff.label}">
-        <b>압</b>
-        <i style="--buff-progress:${Math.min(1, debuff.damageCutPct / 0.46)}"></i>
-      </span>
-    `);
+  const firepowerRows = [
+    `실전 DPS ${fmt(stats.dps)}`,
+    `주인공 ${fmtRate(stats.summonerDps)} / 동료 ${fmtRate(stats.familiarDps)}`,
+    `공격속도 x${stats.attackSpeedMult.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}`,
+    `치명 ${pct(stats.critChancePct)} / 피해 x${stats.critDamageMult.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}`,
+    `추가 투사체 ${pct(stats.projectileChancePct)}`
+  ];
+  if (boost.battleCatalystActive) {
+    firepowerRows.push(`전투 촉매: 피해 +20% / 공속 +20% · ${formatDuration(boost.battleCatalystRemaining)}`);
+  } else {
+    firepowerRows.push("전투 촉매 비활성");
   }
-  if (enemy.boss && stats.bossDamagePct > 0) {
-    chips.push(`
-      <span class="effect-orb ally" data-tooltip="아군 버프&#10;보스 피해 증가&#10;보스에게 주는 최종 피해 +${pct(stats.bossDamagePct)}" aria-label="보스 피해 증가">
-        <b>보</b>
-        <i style="--buff-progress:${Math.min(1, stats.bossDamagePct / 2)}"></i>
-      </span>
-    `);
-  }
-  if (stats.roster?.uniqueCount >= 3) {
-    chips.push(`
-      <span class="effect-orb ally passive" data-tooltip="팀 공명&#10;보유 동료 ${fmt(stats.roster.uniqueCount)}명&#10;보유/예비대 효과가 전투력에 반영 중" aria-label="팀 공명">
-        <b>공</b>
-        <i style="--buff-progress:${Math.min(1, stats.roster.uniqueCount / HEROES.length)}"></i>
-      </span>
-    `);
-  }
-  return chips.length ? `<div class="effect-rail">${chips.join("")}</div>` : "";
+  const curseRows = debuff.damageCutPct > 0
+    ? [
+        `${debuff.label}: 아군 최종 피해 -${pct(debuff.damageCutPct)}`,
+        `원 압박 ${pct(debuff.rawDamageCutPct)}`,
+        `압박 저항 ${pct(debuff.resistPct)} 적용`,
+        "층수/적 역할로 압박 강화"
+      ]
+    : [
+        "현재 압박 없음",
+        `압박 저항 ${pct(stats.debuffResistPct)} 보유`,
+        "1000층 이후 발동",
+        "저주/보스 압박 강화"
+      ];
+  return [
+    {
+      id: "firepower",
+      label: "화력",
+      tone: "positive",
+      icon: "../assets/generated/effect-icons-v1/effect-firepower.png",
+      active: stats.dps > 0 || boost.battleCatalystActive,
+      progress: Math.max(0.12, Math.min(1, stats.attackSpeedMult / 3.25)),
+      summary: boost.battleCatalystActive ? "촉매 적용 중" : `DPS ${fmt(stats.dps)}`,
+      rows: firepowerRows
+    },
+    {
+      id: "resonance",
+      label: "공명",
+      tone: "positive",
+      icon: "../assets/generated/effect-icons-v1/effect-resonance.png",
+      active: (stats.roster?.uniqueCount || 0) >= 3 || stats.gearPower > 0,
+      progress: Math.max(0.08, Math.min(1, (stats.roster?.uniqueCount || 0) / HEROES.length)),
+      summary: `동료 ${fmt(stats.roster?.uniqueCount || 0)}명`,
+      rows: [
+        `보유 동료 ${fmt(stats.roster?.uniqueCount || 0)}/${HEROES.length}`,
+        `예비대 DPS ${fmtRate(stats.roster?.reserveDps || 0)} (${pct(stats.roster?.reserveShare || 0)})`,
+        `동료 공명 공격 +${pct(stats.roster?.attackPct || 0)}`,
+        `장비 수집 공격 +${pct(stats.gearCollection?.attackPct || 0)}`,
+        `장비 전투력 ${fmt(stats.gearPower)}`
+      ]
+    },
+    {
+      id: "curse",
+      label: "저주",
+      tone: "curse",
+      icon: "../assets/generated/effect-icons-v1/effect-curse.png",
+      active: debuff.damageCutPct > 0,
+      progress: Math.max(0.08, Math.min(1, (debuff.rawDamageCutPct || 0) / 0.46)),
+      summary: debuff.damageCutPct > 0 ? `피해 -${pct(debuff.damageCutPct)}` : "압박 대기",
+      rows: curseRows
+    },
+    {
+      id: "boss",
+      label: "보스전",
+      tone: "positive",
+      icon: "../assets/generated/effect-icons-v1/effect-boss.png",
+      active: enemy?.boss || stats.bossDamagePct > 0,
+      progress: Math.max(0.08, Math.min(1, stats.bossDamagePct / 2)),
+      summary: enemy?.boss ? "보스전 적용 중" : `보스 피해 +${pct(stats.bossDamagePct)}`,
+      rows: [
+        `보스 피해 +${pct(stats.bossDamagePct)}`,
+        `고HP 보스 피해 +${pct(stats.highHpBossDamagePct)}`,
+        `저HP 보스 피해 +${pct(stats.lowHpBossDamagePct)}`,
+        `보스 보상 +${pct(stats.bossRewardPct)}`,
+        enemy?.boss ? "현재 보스전 효과 적용 중" : "보스전에서 자동 적용"
+      ]
+    }
+  ];
+}
+
+function renderCombatEffectOrb(group) {
+  const open = app.effectTooltipId === group.id;
+  return `
+    <button type="button" class="effect-orb ${group.tone} ${group.active ? "is-active" : "is-muted"} ${open ? "is-open" : ""}" data-effect-group="${group.id}" aria-label="${group.label} 효과 상세" aria-expanded="${open ? "true" : "false"}" style="--buff-progress:${group.progress}">
+      <img src="${group.icon}" alt="" aria-hidden="true" loading="lazy">
+      <i></i>
+    </button>
+  `;
+}
+
+function renderCombatEffectPopover(group) {
+  const rows = group.rows.map((row) => `<li><span>${escapeHtml(row)}</span></li>`).join("");
+  return `
+    <aside class="effect-popover ${group.tone}" role="status" aria-live="polite">
+      <header>
+        <img src="${group.icon}" alt="" aria-hidden="true">
+        <div>
+          <strong>${escapeHtml(group.label)}</strong>
+          <small>${escapeHtml(group.summary)}</small>
+        </div>
+      </header>
+      <ul>${rows}</ul>
+    </aside>
+  `;
 }
 
 function renderPanel() {
