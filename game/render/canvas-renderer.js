@@ -2,6 +2,7 @@
 
 function loadImage(src) {
   const image = new Image();
+  image.decoding = "async";
   image.src = src;
   image.addEventListener("load", () => render());
   return image;
@@ -35,7 +36,12 @@ function drawBackground(width, height) {
   const cssWidth = width / (window.devicePixelRatio || 1);
   const cssHeight = height / (window.devicePixelRatio || 1);
   const activeBackground = battleBackgroundForStage(app.save.stage);
-  const battleBgImage = activeBackground && activeBackground.image;
+  const battleBgImage = typeof ensureBattleBackgroundImage === "function"
+    ? ensureBattleBackgroundImage(activeBackground)
+    : activeBackground && activeBackground.image;
+  if (typeof scheduleBattleBackgroundPreload === "function") {
+    scheduleBattleBackgroundPreload(app.save.stage, activeBackground);
+  }
   if (battleBgImage.complete && battleBgImage.naturalWidth > 0) {
     const sourceRatio = battleBgImage.naturalWidth / battleBgImage.naturalHeight;
     const targetRatio = cssWidth / cssHeight;

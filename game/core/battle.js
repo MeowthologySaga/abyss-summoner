@@ -242,19 +242,7 @@ function defeatEnemy() {
   render();
 }
 
-function enemyWeaknessBonus(enemyRole) {
-  const counts = roleCounts();
-  const preferred = {
-    tank: "curse",
-    dps: "tank",
-    support: "dps",
-    curse: "support"
-  }[enemyRole];
-  return 1 + counts[preferred] * 0.18;
-}
-
 window.ABYSS_SUMMONER_BATTLE = {
-updateCombat,
-clearBattleProjectiles,
-enemyWeaknessBonus
+  updateCombat,
+  clearBattleProjectiles
 };

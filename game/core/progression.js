@@ -1375,29 +1375,41 @@ function multiplierText(value, digits = 2) {
   return `x${value.toLocaleString("ko-KR", { maximumFractionDigits: digits })}`;
 }
 
+const REBIRTH_REQUIRED_STAGE = 50;
+
+function rebirthGateState() {
+  const currentStage = Math.max(1, Math.floor(Number(app.save.stage) || 1));
+  return {
+    currentStage,
+    requiredStage: REBIRTH_REQUIRED_STAGE,
+    canRebirth: currentStage >= REBIRTH_REQUIRED_STAGE,
+    remainingStages: Math.max(0, REBIRTH_REQUIRED_STAGE - currentStage)
+  };
+}
+
 function rebirthReward() {
-  if (app.save.maxStage < 8) return { souls: 0 };
-  const stageOverStart = Math.max(0, app.save.maxStage - 4);
-  const soulStage = Math.max(0, app.save.maxStage - 10);
-  const formerKeyReward = Math.floor(Math.pow(stageOverStart, 1.18) + app.save.stats.bossesKilled * 1.8);
-  const depthSoulReward = Math.floor(Math.pow(soulStage, 1.08) / 3 + app.save.rebirths * 0.5);
+  const gate = rebirthGateState();
+  if (!gate.canRebirth) return { souls: 0, ...gate };
+  const extraStage = Math.max(0, gate.currentStage - gate.requiredStage);
+  const depthSoulReward = 30 + Math.floor(Math.pow(extraStage, 1.12) * 1.45);
+  const repeatSoulReward = Math.floor(Math.min(18, Math.sqrt(Math.max(0, app.save.rebirths)) * 2));
   const diamond = diamondUpgradeEffects();
   const skin = skinEffects();
   const treasures = treasureEffects();
   const weaponEffects = weaponUpgradeEffects();
   const soulBoost = diamond.soulPct + skin.soulPct + treasures.rebirthSoulPct + weaponEffects.soulPct + equippedGearEffect("rebirthSoulPct") + equippedGearEffect("soulPct");
-  return { souls: Math.max(0, Math.floor((formerKeyReward + depthSoulReward) * (1 + soulBoost))) };
+  return { souls: Math.max(0, Math.floor((depthSoulReward + repeatSoulReward) * (1 + soulBoost))), ...gate };
 }
 
 async function rebirth() {
   const reward = rebirthReward();
-  if (reward.souls <= 0) {
-    showToast("8층 이후부터 환생 보상이 생깁니다.");
+  if (!reward.canRebirth || reward.souls <= 0) {
+    showToast(`환생은 현재 회차 ${reward.requiredStage}층부터 가능합니다. ${reward.remainingStages}층 더 진행하세요.`);
     return;
   }
   const ok = await host.ui.confirm({
     title: "환생",
-    message: `현재 진행을 1층으로 되돌리고 영혼석 ${reward.souls}개를 얻습니다. 동료, 장비, 보물, 소환 천장은 유지됩니다.`
+    message: `이번 회차를 종료하고 1층부터 다시 시작합니다. 영혼석 ${reward.souls}개를 얻고, 동료·장비·보물·소환 천장은 유지됩니다.`
   });
   if (!ok) return;
   app.save.souls += reward.souls;
@@ -1584,9 +1596,9 @@ function equipSkin(id) {
   render();
 }
 
-function createAudio(src, { loop = false, volume = 0.45 } = {}) {
+function createAudio(src, { loop = false, volume = 0.45, preload = "none" } = {}) {
   const audio = new Audio(src);
-  audio.preload = "auto";
+  audio.preload = preload;
   audio.loop = loop;
   audio.volume = volume;
   return audio;
@@ -2023,7 +2035,7 @@ function speechTips(stats, enemy, progress, reward) {
     "다이아 소환은 프리미엄 뽑기다. 확률과 천장은 소환 탭에서 확인해라.",
     "중복 소환은 조각이 되고, 조각이 차면 동료와 장비 레벨이 오른다.",
     "편성하지 않은 동료도 예비대와 보유 효과로 전투에 기여한다.",
-    "보스 피가 잘 안 줄면 환생해서 영혼석 보물을 올릴 타이밍이다.",
+    "50층 이후 보스 피가 잘 안 줄면 환생해서 영혼석 보물을 올릴 타이밍이다.",
     "장비는 부위별로 장착 효과와 보유 효과가 따로 적용된다.",
     "전투 촉매는 짧은 시간 피해와 공속을 올린다. 보스 돌파 전에 쓰면 좋다.",
     "1000층 이후부터 적의 심연 압박이 켜진다. 버프 아이콘에 마우스를 올려 확인해라."
@@ -2035,7 +2047,7 @@ function speechTips(stats, enemy, progress, reward) {
   if (app.tab === "gear") tips.unshift("장비는 무기/갑옷/유물 필터로 나눠 보고, 각 부위 최고 점수를 장착해라.");
   if (app.tab === "treasure") tips.unshift("보물은 환생해도 초기화되지 않는 장기 성장축이다.");
   if (app.tab === "shop") tips.unshift("상점의 특수능력과 외형 보유 효과는 환생해도 유지된다.");
-  if (enemy.boss && reward.souls > 0) tips.unshift(`막히면 환생해라. 지금 영혼석 ${fmt(reward.souls)}개를 받을 수 있다.`);
+  if (enemy.boss && reward.canRebirth) tips.unshift(`막히면 환생해라. 지금 영혼석 ${fmt(reward.souls)}개를 받을 수 있다.`);
   if (enemy.boss && enemy.hp / enemy.maxHp > 0.55) tips.unshift("보스 피가 천천히 줄면 보스 피해, 공속, 환생 보물을 확인해라.");
   if (progress.stage >= 1000) tips.unshift("심연 압박이 켜지는 구간이다. 적 디버프 아이콘을 확인해라.");
   return tips;
@@ -2048,7 +2060,7 @@ function currentSpeechText(stats, enemy, progress, reward) {
     app.speechHintIndex = (app.speechHintIndex + 1) % tips.length;
     app.speechHintNextAt = now + 12000;
   }
-  const urgent = enemy.boss && (reward.souls > 0 || enemy.hp / enemy.maxHp > 0.55);
+  const urgent = enemy.boss && (reward.canRebirth || enemy.hp / enemy.maxHp > 0.55);
   if (urgent) return tips[0];
   return tips[app.speechHintIndex % tips.length] || tips[0];
 }

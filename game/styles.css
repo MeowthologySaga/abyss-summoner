@@ -1644,8 +1644,46 @@ button.summon-action-btn.premium {
 
 .skin-action button {
   width: 100%;
-  min-height: 38px;
+  min-height: 48px;
+  padding: 7px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
   font-size: 12px;
+  line-height: 1.05;
+}
+
+.skin-action button > * {
+  position: relative;
+  z-index: 2;
+}
+
+.skin-action .button-main {
+  font-size: 12px;
+  line-height: 1.05;
+}
+
+.skin-action .button-cost,
+.skin-action .button-free {
+  min-height: 18px;
+  margin-top: 0;
+  padding: 1px 6px;
+  gap: 3px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.skin-action .button-cost strong {
+  max-width: none;
+  font-size: 11px;
+}
+
+.skin-action .button-cost-icon {
+  flex-basis: 14px;
+  width: 14px;
+  height: 14px;
 }
 
 @media (max-width: 420px) {
@@ -2298,57 +2336,6 @@ body {
   color: #f5c76a;
   font-size: 11px;
   line-height: 1;
-}
-
-.boost-chip {
-  position: relative;
-  width: 118px;
-  min-width: 118px;
-  min-height: 24px;
-  padding: 4px 6px 7px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px;
-  align-items: center;
-  overflow: hidden;
-  border-color: rgba(102, 212, 245, 0.55);
-  background: rgba(10, 33, 43, 0.82);
-  color: #b7efff;
-}
-
-.boost-chip b,
-.boost-chip small {
-  position: relative;
-  z-index: 1;
-  line-height: 1;
-}
-
-.boost-chip b {
-  color: #e9fbff;
-  font-size: 10px;
-}
-
-.boost-chip small {
-  color: #f5c76a;
-  font-size: 10px;
-  font-weight: 900;
-}
-
-.boost-chip i {
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  bottom: 3px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.boost-chip i::after {
-  content: "";
-  display: block;
-  width: calc(var(--buff-progress, 0) * 100%);
-  height: 100%;
-  background: linear-gradient(90deg, #66d4f5, #f5c76a);
 }
 
 .floor-title {
@@ -3619,39 +3606,6 @@ button:disabled .button-cost-icon {
   pointer-events: none;
 }
 
-.effect-rail .boost-chip {
-  flex: 0 1 116px;
-  width: 116px;
-  min-width: 0;
-  min-height: 24px;
-  padding: 4px 6px 7px;
-  border-width: 1px;
-}
-
-.effect-rail .boost-chip b,
-.effect-rail .boost-chip small {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.effect-rail .boost-chip.ally {
-  border-color: rgba(102, 212, 245, 0.6);
-  background: rgba(7, 38, 48, 0.84);
-  color: #b7efff;
-}
-
-.effect-rail .boost-chip.enemy {
-  border-color: rgba(248, 113, 113, 0.72);
-  background: rgba(58, 14, 20, 0.86);
-  color: #ffd5d5;
-}
-
-.effect-rail .boost-chip.enemy i::after {
-  background: linear-gradient(90deg, #fb7185, #f5c76a);
-}
-
 .speech-bubble {
   top: 77px;
   left: 12px;
@@ -3669,17 +3623,6 @@ button:disabled .button-cost-icon {
     left: 8px;
     right: 78px;
     gap: 4px;
-  }
-
-  .effect-rail .boost-chip {
-    flex-basis: 104px;
-    padding-left: 5px;
-    padding-right: 5px;
-  }
-
-  .boost-chip b,
-  .boost-chip small {
-    font-size: 9px;
   }
 
   .speech-bubble {

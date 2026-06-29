@@ -25,8 +25,37 @@ const systems = {
 
 const battleBgImages = BATTLE_BACKGROUNDS.map((background) => ({
   ...background,
-  image: systems.canvas.loadImage(background.src)
+  image: null,
+  preloadQueued: false
 }));
+
+function ensureBattleBackgroundImage(background) {
+  if (!background) return null;
+  if (!background.image) {
+    background.image = systems.canvas.loadImage(background.src);
+  }
+  return background.image;
+}
+
+function queueBattleBackgroundImage(background) {
+  if (!background || background.image || background.preloadQueued) return;
+  background.preloadQueued = true;
+  const load = () => ensureBattleBackgroundImage(background);
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(load, { timeout: 2500 });
+  } else {
+    window.setTimeout(load, 500);
+  }
+}
+
+function scheduleBattleBackgroundPreload(stage, activeBackground) {
+  const stageNumber = Number.isFinite(stage) ? Math.max(1, Math.floor(stage)) : 1;
+  const activeIndex = battleBgImages.indexOf(activeBackground);
+  const nextBackground = activeIndex >= 0 ? battleBgImages[activeIndex + 1] : null;
+  if (nextBackground && stageNumber >= nextBackground.startStage - 10) {
+    queueBattleBackgroundImage(nextBackground);
+  }
+}
 const summonerSpriteSheet = systems.canvas.loadImage(ASSETS.summonerSheet);
 const companionSpriteSheet = systems.canvas.loadImage(ASSETS.companionSheet);
 const enemySpriteSheet = systems.canvas.loadImage(ASSETS.enemySheet);

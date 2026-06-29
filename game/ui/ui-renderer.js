@@ -54,19 +54,6 @@ function navButton(tab, label) {
   return `<button class="${app.tab === tab ? "active" : ""}" data-tab="${tab}"><span class="nav-icon nav-${tab}"></span><span>${label}</span></button>`;
 }
 
-function renderActiveBuffChips() {
-  const boost = activeBoostEffects();
-  if (!boost.battleCatalystActive) return "";
-  const progress = Math.max(0, Math.min(1, boost.battleCatalystRemaining / (BATTLE_CATALYST_DURATION_MS / 1000)));
-  return `
-    <span class="boost-chip" title="전투 촉매: 피해 +20%, 공속 +20%">
-      <b>촉매</b>
-      <small>${formatDuration(boost.battleCatalystRemaining)}</small>
-      <i style="--buff-progress:${progress}"></i>
-    </span>
-  `;
-}
-
 function renderCombatEffectRail(stats, enemy) {
   const groups = buildCombatEffectGroups(stats, enemy);
   const selected = groups.find((group) => group.id === app.effectTooltipId) || null;
@@ -215,15 +202,11 @@ function renderUpgradeStepControl() {
 }
 
 function renderWeaponPanel() {
-  const enemy = app.enemy || enemyForStage(app.save.stage, app.save.floorKill);
   const progress = battleProgress();
   const reward = rebirthReward();
   const stats = calcStats();
   const weaponPlan = upgradePurchasePlan(app.save.weaponLevel, weaponCostAtLevel);
-  const gateState = enemy.boss
-      ? "보스전 진행"
-      : "자동 전투";
-  const rebirthLabel = reward.souls > 0 ? `환생 ${fmt(reward.souls)}영혼석` : "환생 보기";
+  const rebirthLabel = reward.canRebirth ? `환생 ${fmt(reward.souls)}영혼석` : `환생 ${reward.remainingStages}층 남음`;
   const upgradeValue = (type) => {
     if (type === "attack") return `주문 피해 x${Math.pow(1.11, app.save.runUpgrades.attack).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}`;
     if (type === "attackSpeed") return `공속 x${stats.attackSpeedMult.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}`;
@@ -260,8 +243,8 @@ function renderWeaponPanel() {
         art: weaponUiIcon("abyssGate"),
         title: "심연문",
         desc: `${progress.stage}층 ${progress.progressText} 진행 중`,
-        value: gateState,
-        button: `<button class="${reward.souls > 0 ? "primary" : ""}" data-tab="rebirth">${rebirthLabel}</button>`,
+        value: reward.canRebirth ? "이번 회차 환생 가능" : `현재 ${reward.currentStage}층 · ${reward.remainingStages}층 남음`,
+        button: `<button class="${reward.canRebirth ? "primary" : ""}" data-tab="rebirth">${rebirthLabel}</button>`,
         currency: "soul"
       })}
       ${upgradeRow({
@@ -904,57 +887,6 @@ function heroSummaryChip(label, value) {
   `;
 }
 
-function renderLegacyGearPanel() {
-  const equipped = new Set(Object.values(app.save.equippedGear).filter(Boolean));
-  const slotOrder = ["weapon", "armor", "relic"];
-  const ownedIds = Object.keys(app.save.ownedGear).sort((a, b) => itemPower("gear", b) - itemPower("gear", a));
-  const renderCard = (id) => {
-      const gear = getData("gear", id);
-      const owned = getOwned("gear", id);
-      return `
-        <div class="card collection-card rarity-${gear.rarity} ${equipped.has(id) ? "selected" : ""}" data-gear-id="${id}">
-          <div class="collection-art">${catalogImgTag("gear", id, gear.name)}</div>
-          <div class="collection-copy">
-            <h3 class="${rarityClass(gear.rarity)}">${gear.name} Lv.${owned.level}</h3>
-            <p class="tiny">${RARITIES[gear.rarity].label} / ${slotLabel(gear.slot)} / 전투력 ${fmt(itemPower("gear", id))}</p>
-            <p class="tiny">${gearOptionText(gear, owned)}</p>
-            <div class="tiny">${shardProgressText(gear, owned)}</div>
-            <button data-equip-gear="${id}">${equipped.has(id) ? "장착 중" : "장착"}</button>
-          </div>
-        </div>
-      `;
-    };
-  const sections = slotOrder
-    .map((slot) => {
-      const slotIds = ownedIds.filter((id) => getData("gear", id).slot === slot);
-      const equippedId = app.save.equippedGear[slot];
-      const equippedText = equippedId ? `장착 ${getData("gear", equippedId).name}` : "장착 없음";
-      const cards = slotIds.map(renderCard).join("");
-      return `
-        <section class="gear-section">
-          <div class="gear-section-head">
-            <strong>${slotLabel(slot)}</strong>
-            <span>${slotIds.length}개 보유 · ${equippedText}</span>
-          </div>
-          <div class="grid cols-3 gear-grid">
-            ${cards || `<div class="gear-empty">아직 보유한 ${slotLabel(slot)} 장비가 없습니다.</div>`}
-          </div>
-        </section>
-      `;
-    })
-    .join("");
-  return `
-    <div class="split">
-      <div>
-        <h2>장비</h2>
-        <p class="muted">무기, 갑옷, 유물 3개 슬롯이 주인공의 기본 전투력을 올립니다.</p>
-      </div>
-      <button data-auto-gear>추천 장비</button>
-    </div>
-    <div class="gear-sections">${sections}</div>
-  `;
-}
-
 function renderGearSlotFilters(ownedIds) {
   return `
     <div class="gear-slot-filter" role="group" aria-label="장비 부위 선택">
@@ -1027,13 +959,19 @@ function slotLabel(slot) {
 
 function renderRebirthPanel() {
   const reward = rebirthReward();
+  const gateText = reward.canRebirth
+    ? `현재 ${reward.currentStage}층 · 지금 환생 가능`
+    : `현재 ${reward.currentStage}층 · ${reward.remainingStages}층 더 진행 필요`;
+  const rewardText = reward.canRebirth ? `${fmt(reward.souls)} 영혼석` : `${reward.requiredStage}층 도달 후 계산`;
+  const buttonText = reward.canRebirth ? "환생하기" : `${reward.remainingStages}층 남음`;
   return `
     <div class="grid cols-2">
       <div class="card">
         <h2>환생</h2>
-        <p class="muted">막히면 1층으로 돌아가 영혼석을 얻습니다. 동료, 장비, 보물, 천장 카운트는 유지됩니다.</p>
-        <p>예상 보상: <strong>${fmt(reward.souls)} 영혼석</strong></p>
-        <button class="warn" data-rebirth ${reward.souls <= 0 ? "disabled" : ""}>환생하기</button>
+        <p class="muted">${reward.requiredStage}층 이상에서 이번 회차를 끝내고 1층부터 다시 시작합니다. 보상으로 영혼석을 받고, 동료·장비·보물·소환 천장은 유지됩니다.</p>
+        <p class="tiny">${gateText}</p>
+        <p>받을 영혼석: <strong>${rewardText}</strong></p>
+        <button class="warn" data-rebirth ${!reward.canRebirth || reward.souls <= 0 ? "disabled" : ""}>${buttonText}</button>
       </div>
       <div class="card">
         <h2>누적 기록</h2>
@@ -1056,6 +994,5 @@ function renderRebirthPanel() {
 window.ABYSS_SUMMONER_UI = {
 render,
 renderPanel,
-renderActiveBuffChips,
 renderCombatEffectRail
 };
