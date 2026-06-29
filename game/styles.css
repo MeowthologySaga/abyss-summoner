@@ -229,6 +229,47 @@ button.warn {
   background: rgba(245, 199, 106, 0.12);
 }
 
+button.is-confirming {
+  border-color: rgba(245, 199, 106, 0.9);
+  background: linear-gradient(180deg, #a97422, #5b3517);
+  color: #fff2bf;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 242, 191, 0.28),
+    0 0 14px rgba(245, 199, 106, 0.28);
+  transform: translateY(1px);
+}
+
+.collection-card.formation-flash {
+  animation: formation-flash 1.05s ease-out;
+}
+
+@keyframes formation-flash {
+  0% {
+    outline: 2px solid rgba(255, 242, 191, 0.95);
+    box-shadow:
+      0 0 0 2px rgba(245, 199, 106, 0.42),
+      0 0 22px rgba(245, 199, 106, 0.48);
+  }
+  45% {
+    outline: 2px solid rgba(245, 199, 106, 0.72);
+    box-shadow:
+      0 0 0 2px rgba(245, 199, 106, 0.28),
+      0 0 16px rgba(245, 199, 106, 0.36);
+  }
+  100% {
+    outline: 0 solid transparent;
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collection-card.formation-flash {
+    animation: none;
+    outline: 2px solid rgba(245, 199, 106, 0.72);
+    box-shadow: 0 0 0 2px rgba(245, 199, 106, 0.28);
+  }
+}
+
 .panel-kicker {
   margin: 0 0 2px;
   color: #d9a84f;
@@ -4456,6 +4497,18 @@ body {
     color: #fff2bf;
     text-align: center;
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+  }
+
+  .upgrade-item .item-action button:disabled {
+    border-color: #272323;
+    background:
+      linear-gradient(135deg, #4a4333 0 8px, transparent 8px) top left / 16px 16px no-repeat,
+      linear-gradient(225deg, #4a4333 0 8px, transparent 8px) top right / 16px 16px no-repeat,
+      linear-gradient(315deg, #4a4333 0 8px, transparent 8px) bottom right / 16px 16px no-repeat,
+      linear-gradient(45deg, #4a4333 0 8px, transparent 8px) bottom left / 16px 16px no-repeat,
+      #2b2829;
+    color: #927f47;
+    opacity: 1;
   }
 
   .upgrade-item .button-cost,

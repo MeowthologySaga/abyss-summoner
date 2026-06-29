@@ -782,7 +782,7 @@ function renderHeroesPanel() {
       const isEquipped = equipped.has(id);
       const influence = heroInfluence(hero, owned);
       return `
-        <div class="card collection-card hero-card rarity-${hero.rarity} ${isEquipped ? "selected" : ""}">
+        <div class="card collection-card hero-card rarity-${hero.rarity} ${isEquipped ? "selected" : ""}" data-hero-id="${id}">
           <div class="collection-art">${catalogImgTag("heroes", id, hero.name)}</div>
           <div class="collection-copy">
             <h3 class="${rarityClass(hero.rarity)}">${hero.name} Lv.${owned.level}</h3>
@@ -835,7 +835,7 @@ function renderLegacyGearPanel() {
       const gear = getData("gear", id);
       const owned = getOwned("gear", id);
       return `
-        <div class="card collection-card rarity-${gear.rarity} ${equipped.has(id) ? "selected" : ""}">
+        <div class="card collection-card rarity-${gear.rarity} ${equipped.has(id) ? "selected" : ""}" data-gear-id="${id}">
           <div class="collection-art">${catalogImgTag("gear", id, gear.name)}</div>
           <div class="collection-copy">
             <h3 class="${rarityClass(gear.rarity)}">${gear.name} Lv.${owned.level}</h3>
@@ -907,7 +907,7 @@ function renderGearPanel() {
     const gear = getData("gear", id);
     const owned = getOwned("gear", id);
     return `
-      <div class="card collection-card rarity-${gear.rarity} ${equipped.has(id) ? "selected" : ""}">
+      <div class="card collection-card rarity-${gear.rarity} ${equipped.has(id) ? "selected" : ""}" data-gear-id="${id}">
         <div class="collection-art">${catalogImgTag("gear", id, gear.name)}</div>
         <div class="collection-copy">
           <h3 class="${rarityClass(gear.rarity)}">${gear.name} Lv.${owned.level}</h3>

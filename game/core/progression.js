@@ -1891,6 +1891,7 @@ function equipHero(id) {
 }
 
 function autoEquipHeroes() {
+  const previous = app.save.equippedHeroes.filter(Boolean);
   const entries = ownedHeroEntries().sort((a, b) => b.power - a.power);
   const selected = [];
   ["dps", "tank", "support", "curse"].forEach((role) => {
@@ -1903,9 +1904,15 @@ function autoEquipHeroes() {
       selected.push(entry.id);
     }
   });
-  app.save.equippedHeroes = selected.slice(0, 3);
-  writeSave();
-  render();
+  const selectedIds = selected.slice(0, 3);
+  const selectedNames = selectedIds.map((id) => getData("hero", id)?.name || id);
+  const changed = !sameIdList(previous, selectedIds);
+  if (changed) {
+    app.save.equippedHeroes = selectedIds;
+    writeSave();
+    render();
+  }
+  return { changed, selectedIds, selectedNames };
 }
 
 function equipGear(id) {
@@ -1916,14 +1923,28 @@ function equipGear(id) {
 }
 
 function autoEquipGear() {
-  ["weapon", "armor", "relic"].forEach((slot) => {
+  const slots = ["weapon", "armor", "relic"];
+  const previous = { ...app.save.equippedGear };
+  const next = { ...app.save.equippedGear };
+  slots.forEach((slot) => {
     const best = Object.keys(app.save.ownedGear)
       .filter((id) => getData("gear", id).slot === slot)
       .sort((a, b) => gearEquipScore(b) - gearEquipScore(a))[0];
-    if (best) app.save.equippedGear[slot] = best;
+    if (best) next[slot] = best;
   });
-  writeSave();
-  render();
+  const changed = slots.some((slot) => previous[slot] !== next[slot]);
+  if (changed) {
+    app.save.equippedGear = next;
+    writeSave();
+    render();
+  }
+  const selectedIds = slots.map((slot) => next[slot]).filter(Boolean);
+  const selectedNames = selectedIds.map((id) => getData("gear", id)?.name || id);
+  return { changed, selectedIds, selectedNames };
+}
+
+function sameIdList(left, right) {
+  return left.length === right.length && left.every((id, index) => id === right[index]);
 }
 
 function setTab(tab) {

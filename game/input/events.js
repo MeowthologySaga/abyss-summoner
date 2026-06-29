@@ -71,6 +71,55 @@ function routePanelWheel(event) {
   event.preventDefault();
 }
 
+const AUTO_RECOMMENDATION_FEEDBACK_MS = 1100;
+
+function runAutoRecommendationFeedback(config) {
+  const names = config.result.selectedNames || [];
+  const message = names.length === 0
+    ? config.emptyMessage
+    : config.result.changed
+      ? `${config.successPrefix}: ${names.join(" / ")}`
+      : config.sameMessage;
+  showToast(message);
+  if (window.navigator?.vibrate) window.navigator.vibrate(12);
+  applyAutoRecommendationFeedback(config);
+  window.setTimeout(() => applyAutoRecommendationFeedback(config), 40);
+}
+
+function applyAutoRecommendationFeedback(config) {
+  const button = ui.querySelector(config.buttonSelector) || (config.trigger?.isConnected ? config.trigger : null);
+  if (button) flashAutoRecommendationButton(button, config.confirmLabel);
+  flashRecommendedCards(config.cardSelector, config.result.selectedIds || []);
+}
+
+function flashAutoRecommendationButton(button, label) {
+  if (!button.dataset.autoFeedbackOriginal) {
+    button.dataset.autoFeedbackOriginal = button.textContent || "";
+  }
+  button.classList.add("is-confirming");
+  button.textContent = label;
+  window.setTimeout(() => {
+    if (!button.isConnected) return;
+    button.classList.remove("is-confirming");
+    button.textContent = button.dataset.autoFeedbackOriginal || button.textContent;
+    delete button.dataset.autoFeedbackOriginal;
+  }, AUTO_RECOMMENDATION_FEEDBACK_MS);
+}
+
+function flashRecommendedCards(selector, ids) {
+  const selected = new Set(ids);
+  ui.querySelectorAll(selector).forEach((card) => {
+    const id = card.dataset.heroId || card.dataset.gearId;
+    if (!selected.has(id)) return;
+    card.classList.remove("formation-flash");
+    void card.offsetWidth;
+    card.classList.add("formation-flash");
+    window.setTimeout(() => {
+      if (card.isConnected) card.classList.remove("formation-flash");
+    }, AUTO_RECOMMENDATION_FEEDBACK_MS);
+  });
+}
+
 function bindEvents() {
   document.addEventListener(
     "pointerdown",
@@ -140,9 +189,31 @@ function bindEvents() {
       await summon(mode, kind, Number(count));
     }
     if (target.dataset.equipHero) equipHero(target.dataset.equipHero);
-    if (target.dataset.autoHeroes !== undefined) autoEquipHeroes();
+    if (target.dataset.autoHeroes !== undefined) {
+      runAutoRecommendationFeedback({
+        trigger: target,
+        buttonSelector: "[data-auto-heroes]",
+        cardSelector: "[data-hero-id]",
+        confirmLabel: "편성 완료",
+        successPrefix: "추천 편성 완료",
+        sameMessage: "이미 추천 편성입니다",
+        emptyMessage: "추천할 동료가 없습니다",
+        result: autoEquipHeroes()
+      });
+    }
     if (target.dataset.equipGear) equipGear(target.dataset.equipGear);
-    if (target.dataset.autoGear !== undefined) autoEquipGear();
+    if (target.dataset.autoGear !== undefined) {
+      runAutoRecommendationFeedback({
+        trigger: target,
+        buttonSelector: "[data-auto-gear]",
+        cardSelector: "[data-gear-id]",
+        confirmLabel: "장비 완료",
+        successPrefix: "추천 장비 완료",
+        sameMessage: "이미 추천 장비입니다",
+        emptyMessage: "추천할 장비가 없습니다",
+        result: autoEquipGear()
+      });
+    }
     if (target.dataset.rebirth !== undefined) await rebirth();
     if (target.dataset.buySkin) await buySkin(target.dataset.buySkin);
     if (target.dataset.equipSkin) equipSkin(target.dataset.equipSkin);
