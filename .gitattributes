@@ -1,0 +1,5 @@
+# Runtime integrity is byte-for-byte. Do not let Git rewrite line endings.
+* -text whitespace=cr-at-eol
+
+*.mp3 binary
+*.webp binary
