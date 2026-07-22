@@ -1,35 +1,29 @@
-# 심연의 무명소환사
+# Abyss Summoner | 심연의 무명소환사
 
-어둠 속으로 계속 내려가며 동료와 장비를 소환하고, 막히면 환생해 더 강해지는 다크 판타지 방치형 RPG입니다. Language Miner의 공식 PlayZone 게임으로 제공됩니다.
+[Play in your browser](https://meowthologysaga.github.io/abyss-summoner/) · [Source repository](https://github.com/MeowthologySaga/abyss-summoner)
 
-## 주요 특징
+**Abyss Summoner** is a dark-fantasy idle RPG. Summon heroes and gear, grow through upgrades and rebirth, and collect offline rewards.
 
-- 자동 전투와 오프라인 보상
-- 동료·장비 소환과 도감 수집
-- 강화, 보물, 외형, 환생을 잇는 장기 성장
-- Language Miner 다이아를 사용하는 선택형 보상
+**심연의 무명소환사**는 자동전투, 강화, 소환, 환생과 방치 보상으로 성장하는 다크 판타지 방치형 RPG입니다.
 
-## 실행 방법
+## Play
 
-이 게임팩은 Language Miner PlayZone 전용입니다. 웹 브라우저에서 `game/index.html`을 직접 열면 실행되지 않습니다.
+- Browser preview: open the GitHub Pages link above. It uses the built-in mock wallet only and does not make network requests.
+- Language Miner PlayZone: install the official `.lemgame` package. The host storage and Diamond contracts remain manifest-gated.
+- Languages: Korean (한국어) and English. The game uses a Language Miner host language when available, otherwise the OS language; players can change it in Settings and their choice is saved.
 
-1. [Language Miner](https://github.com/MeowthologySaga/Language_Miner)를 설치합니다.
-2. 앱에서 `PlayZone`을 엽니다.
-3. 공식 게임 목록에서 `심연의 무명소환사`를 설치하고 실행합니다.
-
-진행 데이터는 Language Miner의 게임팩 전용 저장소에 보관됩니다. 화면·소리 설정 일부는 게임팩 이름이 붙은 브라우저 로컬 설정으로 저장됩니다. 게임은 네트워크, 외부 링크, 학습 카드에 접근하지 않습니다. 다이아는 manifest에 선언된 항목만 앱의 확인을 거쳐 사용할 수 있습니다.
-
-## 개발자 확인
+## Development verification
 
 ```powershell
 python tools/verify_public_export.py
+python tools/make_deterministic_lem.py
 ```
 
-빌드·체크섬·게임팩 재생성 방법은 [BUILD.md](./BUILD.md)를 참고하세요.
+See [BUILD.md](./BUILD.md) for the deterministic package procedure.
 
-## 라이선스
+## Licenses and asset rights
 
-- JavaScript, HTML, CSS와 manifest: `GPL-3.0-only`
-- 이미지와 오디오: `LicenseRef-Meowthology-Official-Builtin`
+- JavaScript, HTML, CSS, and manifest: `GPL-3.0-only`
+- Images and audio: `LicenseRef-Meowthology-Official-Builtin`
 
-자세한 범위와 재배포 조건은 [ASSET-INVENTORY.md](./ASSET-INVENTORY.md), [MEDIA-LICENSE.md](./MEDIA-LICENSE.md), [LICENSE.media.txt](./LICENSE.media.txt)를 참고하세요.
+See [ASSET-INVENTORY.md](./ASSET-INVENTORY.md), [MEDIA-LICENSE.md](./MEDIA-LICENSE.md), and [LICENSE.media.txt](./LICENSE.media.txt) for the asset inventory and terms.

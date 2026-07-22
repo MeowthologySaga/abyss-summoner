@@ -17,14 +17,14 @@ function fmt(value) {
     const decimals = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
     return `${scaled.toFixed(decimals)}${alphaTier(tier)}`;
   }
-  return Math.floor(value).toLocaleString("ko-KR");
+  return Math.floor(value).toLocaleString(abyssLocaleTag());
 }
 
 function fmtRate(value) {
   if (!Number.isFinite(value) || value <= 0) return "0";
   if (value >= 100) return fmt(value);
-  if (value >= 10) return value.toLocaleString("ko-KR", { maximumFractionDigits: 1 });
-  return value.toLocaleString("ko-KR", { maximumFractionDigits: 2 });
+  if (value >= 10) return value.toLocaleString(abyssLocaleTag(), { maximumFractionDigits: 1 });
+  return value.toLocaleString(abyssLocaleTag(), { maximumFractionDigits: 2 });
 }
 
 function alphaTier(tier) {
@@ -61,9 +61,9 @@ function diamondActionAmount(actionId) {
 
 function currencyLabel(currency) {
   return {
-    coin: "골드",
-    soul: "영혼석",
-    diamond: "다이아"
+    coin: abyssT("currency.gold"),
+    soul: abyssT("currency.soul"),
+    diamond: abyssT("currency.diamond")
   }[currency] || currency;
 }
 
@@ -78,7 +78,7 @@ function costLine(currency, amount) {
 }
 
 function freeLine() {
-  return `<span class="button-free">무료</span>`;
+  return `<span class="button-free">${abyssT("common.free")}</span>`;
 }
 
 function actionButton(label, currency, amount) {
@@ -146,7 +146,7 @@ function shopUiIcon(id) {
 }
 
 function catalogAsset(kind, id) {
-  return `../assets/generated/catalog/${kind}/${id}.webp`;
+  return `../assets/generated/catalog/${kind}/${id}.png`;
 }
 
 function catalogFallbackIcon(kind, id) {
@@ -232,8 +232,8 @@ function skinIdleSheet(skin) {
   return image;
 }
 
-function pushLog(message) {
-  app.log.unshift(message);
+function pushLog(key, variables = {}) {
+  app.log.unshift({ key, variables });
   app.log = app.log.slice(0, 5);
 }
 
@@ -287,6 +287,8 @@ function ensureSaveShape(save) {
     next.consumables[item.id] = Math.max(0, Math.floor(Number(next.consumables[item.id]) || 0));
   });
   next.activeBoosts.battleCatalystUntil = Math.max(0, Number(next.activeBoosts.battleCatalystUntil) || 0);
+  next.localeOverride = window.ABYSS_SUMMONER_I18N.normalizeLocale(save.localeOverride) || null;
+  next.onboardingComplete = Boolean(save.onboardingComplete);
   next.floorKill = Math.min(MONSTERS_PER_FLOOR, Math.max(1, Number(next.floorKill) || 1));
   next.souls = Number(next.souls) || 0;
   if (incomingSchema < 2) {
@@ -297,7 +299,7 @@ function ensureSaveShape(save) {
   }
   delete next.keys;
   delete next.stats.keysEarned;
-  next.saveSchemaVersion = 2;
+  next.saveSchemaVersion = 3;
   next.weaponLevel = Number(next.weaponLevel) || 0;
   next.questLevel = Number(next.questLevel) || 0;
   delete next.bossTickets;
@@ -338,7 +340,7 @@ function addOwned(kind, id, silent) {
   const shardGain = RARITIES[data.rarity].shard;
   if (!owned) {
     setOwned(kind, id, { id, level: 1, shards: 0 });
-    if (!silent) pushLog(`${data.name} 획득`);
+    if (!silent) pushLog("log.item_obtained", { name: data.name });
     return { id, duplicate: false, levelUp: false, shardGain: 0 };
   }
   owned.shards += shardGain;
@@ -350,7 +352,7 @@ function addOwned(kind, id, silent) {
     levelUp = true;
   }
   if (!silent) {
-    pushLog(levelUp ? `${data.name} 승급 Lv.${owned.level}` : `${data.name} 조각 획득`);
+    pushLog(levelUp ? "log.item_rank" : "log.item_shard", { name: data.name, level: owned.level });
   }
   return { id, duplicate: true, levelUp, shardGain };
 }
@@ -361,7 +363,7 @@ function shardNeed(rarity, level) {
 }
 
 function shardProgressText(data, owned) {
-  return `승급 조각 ${owned.shards}/${shardNeed(data.rarity, owned.level)}`;
+  return abyssT("item.shard_progress", { current: owned.shards, required: shardNeed(data.rarity, owned.level) });
 }
 
 function normalizeOwnedCollection(kind, collection) {
@@ -445,28 +447,32 @@ function gearEquipScore(id) {
   return power + gearEffectValue(id, gear?.effect) * (weights[gear?.effect] || 0);
 }
 
+function effectLabel(effect) {
+  const key = {
+    attackPct: "stat.all_damage",
+    attackSpeedPct: "stat.attack_speed",
+    bossDamagePct: "stat.boss_damage",
+    projectileChancePct: "stat.extra_projectile",
+    ownedEffectPct: "stat.owned_bonus",
+    questGoldPct: "stat.quest_gold",
+    goldPct: "stat.gold_gain",
+    soulPct: "stat.boss_soul",
+    bossSoulPct: "stat.boss_soul",
+    rebirthSoulPct: "stat.rebirth_soul",
+    reserveDpsPct: "stat.reserve_dps",
+    debuffResistPct: "stat.pressure_resist",
+    weaknessBonusPct: "stat.counter_damage",
+    lowHpBossDamagePct: "stat.execution_damage",
+    normalSummonDiscountPct: "stat.normal_summon_cost"
+  }[effect];
+  return abyssT(key || "stat.special_option");
+}
+
 function gearOptionText(gear, owned) {
-  if (!gear.effect) return "기본 전투력 증가";
-  const labels = {
-    attackPct: "전체 피해",
-    attackSpeedPct: "공격속도",
-    bossDamagePct: "보스 피해",
-    projectileChancePct: "추가 투사체",
-    ownedEffectPct: "보유 효과",
-    questGoldPct: "퀘스트 골드",
-    goldPct: "골드 획득",
-    soulPct: "보스 영혼석",
-    bossSoulPct: "보스 영혼석",
-    rebirthSoulPct: "환생 영혼석",
-    reserveDpsPct: "예비대 DPS",
-    debuffResistPct: "압박 저항",
-    weaknessBonusPct: "상성 피해",
-    lowHpBossDamagePct: "마무리 보스 피해",
-    normalSummonDiscountPct: "일반 소환 비용"
-  };
-  if (gear.effect === "normalSummonDiscountPct") return `${labels[gear.effect]} -${pct(gearEffectValueAtLevel(gear.id, gear.effect, owned.level))}`;
-  if (labels[gear.effect]) return `${labels[gear.effect]} +${pct(gearEffectValueAtLevel(gear.id, gear.effect, owned.level))}`;
-  return "기본 전투력 증가";
+  if (!gear.effect) return abyssT("item.base_power_up");
+  const label = effectLabel(gear.effect);
+  if (gear.effect === "normalSummonDiscountPct") return `${label} -${pct(gearEffectValueAtLevel(gear.id, gear.effect, owned.level))}`;
+  return `${label} +${pct(gearEffectValueAtLevel(gear.id, gear.effect, owned.level))}`;
 }
 
 function heroGrowthLines(id, isEquipped) {
@@ -475,15 +481,15 @@ function heroGrowthLines(id, isEquipped) {
   if (isEquipped) {
     return `
       <div class="growth-lines">
-        <span>Lv+1 전투력 +${fmt(nextPowerGain)} (+${pct(ITEM_LEVEL_POWER_GROWTH)})</span>
-        <span>편성 중: 전투력 100%가 전투에 적용</span>
+        <span>${abyssT("growth.hero_power", { value: fmt(nextPowerGain), rate: pct(ITEM_LEVEL_POWER_GROWTH) })}</span>
+        <span>${abyssT("growth.deployed_full")}</span>
       </div>
     `;
   }
   return `
     <div class="growth-lines">
-      <span>예비대 DPS ${fmtRate(currentPower * RESERVE_DPS_SHARE)}</span>
-      <span>Lv+1 예비대 DPS +${fmtRate(nextPowerGain * RESERVE_DPS_SHARE)} (전투력의 ${pct(RESERVE_DPS_SHARE)})</span>
+      <span>${abyssT("growth.reserve", { value: fmtRate(currentPower * RESERVE_DPS_SHARE) })}</span>
+      <span>${abyssT("growth.reserve_next", { value: fmtRate(nextPowerGain * RESERVE_DPS_SHARE), share: pct(RESERVE_DPS_SHARE) })}</span>
     </div>
   `;
 }
@@ -493,11 +499,11 @@ function gearGrowthLines(id) {
   const owned = getOwned("gear", id);
   const nextPowerGain = itemPowerGainNextLevel("gear", id);
   const optionLine = gear.effect === "attackSpeedPct"
-    ? `특수 옵션 Lv+1 +${pct(gearEffectValueAtLevel(id, "attackSpeedPct", owned.level + 1) - gearEffectValueAtLevel(id, "attackSpeedPct", owned.level))}`
-    : "장착 효과: 장비 전투력만 상승";
+    ? abyssT("growth.special_next", { value: pct(gearEffectValueAtLevel(id, "attackSpeedPct", owned.level + 1) - gearEffectValueAtLevel(id, "attackSpeedPct", owned.level)) })
+    : abyssT("growth.gear_power_only");
   return `
     <div class="growth-lines">
-      <span>Lv+1 장비 전투력 +${fmt(nextPowerGain)} (+${pct(ITEM_LEVEL_POWER_GROWTH)})</span>
+      <span>${abyssT("growth.gear_power", { value: fmt(nextPowerGain), rate: pct(ITEM_LEVEL_POWER_GROWTH) })}</span>
       <span>${optionLine}</span>
     </div>
   `;
@@ -509,8 +515,8 @@ function heroGrowthEffectLines(id) {
   const nextPowerGain = itemPowerGainNextLevel("hero", id);
   return `
     <div class="growth-lines">
-      <span>Lv+1 편성 효과: 전투력 +${fmt(nextPowerGain)}</span>
-      <span>Lv+1 보유 효과: ${heroOwnedGrowthText(hero, owned.level)}</span>
+      <span>${abyssT("growth.deployed_effect", { value: fmt(nextPowerGain) })}</span>
+      <span>${abyssT("growth.owned_effect", { value: heroOwnedGrowthText(hero, owned.level) })}</span>
     </div>
   `;
 }
@@ -522,30 +528,14 @@ function gearGrowthEffectLines(id) {
   const optionGain = gear.effect
     ? gearEffectValueAtLevel(id, gear.effect, owned.level + 1) - gearEffectValueAtLevel(id, gear.effect, owned.level)
     : 0;
-  const optionLabel = {
-    attackPct: "전체 피해",
-    attackSpeedPct: "공격속도",
-    bossDamagePct: "보스 피해",
-    projectileChancePct: "추가 투사체",
-    ownedEffectPct: "보유 효과",
-    questGoldPct: "퀘스트 골드",
-    goldPct: "골드 획득",
-    soulPct: "보스 영혼석",
-    bossSoulPct: "보스 영혼석",
-    rebirthSoulPct: "환생 영혼석",
-    reserveDpsPct: "예비대 DPS",
-    debuffResistPct: "압박 저항",
-    weaknessBonusPct: "상성 피해",
-    lowHpBossDamagePct: "마무리 보스 피해",
-    normalSummonDiscountPct: "일반 소환 비용"
-  }[gear.effect] || "특수 옵션";
+  const optionLabel = effectLabel(gear.effect);
   const optionLine = optionGain > 0
     ? `, ${optionLabel} ${gear.effect === "normalSummonDiscountPct" ? "-" : "+"}${pct(optionGain)}`
     : "";
   return `
     <div class="growth-lines">
-      <span>Lv+1 장착 효과: 전투력 +${fmt(nextPowerGain)}${optionLine}</span>
-      <span>Lv+1 보유 효과: ${gearOwnedGrowthText(gear, owned.level)}</span>
+      <span>${abyssT("growth.equipped_effect", { value: fmt(nextPowerGain), option: optionLine })}</span>
+      <span>${abyssT("growth.owned_effect", { value: gearOwnedGrowthText(gear, owned.level) })}</span>
     </div>
   `;
 }
@@ -588,31 +578,31 @@ function heroOwnedAttackContribution(level) {
 function heroRoleOwnedContribution(data, level) {
   const influence = heroInfluenceAtLevel(data, level);
   const config = {
-    tank: { label: "탱커 보스피해", value: influence * 0.014 },
-    dps: { label: "딜러 피해", value: influence * 0.012 },
-    support: { label: "지원 골드", value: influence * 0.014 },
-    curse: { label: "저주 보스피해", value: influence * 0.015 }
+    tank: { label: abyssT("stat.tank_boss"), value: influence * 0.014 },
+    dps: { label: abyssT("stat.dps_damage"), value: influence * 0.012 },
+    support: { label: abyssT("stat.support_gold"), value: influence * 0.014 },
+    curse: { label: abyssT("stat.hexer_boss"), value: influence * 0.015 }
   }[data.role];
-  return config || { label: "공명", value: 0 };
+  return config || { label: abyssT("stat.resonance"), value: 0 };
 }
 
 function heroOwnedEffectText(data, level) {
   const role = heroRoleOwnedContribution(data, level);
-  return `전체 공격 +${pct(heroOwnedAttackContribution(level))}, ${role.label} +${pct(role.value)}`;
+  return `${abyssT("stat.all_attack")} +${pct(heroOwnedAttackContribution(level))}, ${role.label} +${pct(role.value)}`;
 }
 
 function heroOwnedGrowthText(data, level) {
   const currentRole = heroRoleOwnedContribution(data, level);
   const nextRole = heroRoleOwnedContribution(data, level + 1);
-  return `전체 공격 +${pct(0.004)}, ${currentRole.label} +${pct(Math.max(0, nextRole.value - currentRole.value))}`;
+  return `${abyssT("stat.all_attack")} +${pct(0.004)}, ${currentRole.label} +${pct(Math.max(0, nextRole.value - currentRole.value))}`;
 }
 
 function gearOwnedEffectConfig(slot) {
   return {
-    weapon: { effect: "attackPct", label: "전체 공격" },
-    armor: { effect: "bossDamagePct", label: "보스 피해" },
-    relic: { effect: "goldPct", label: "골드 획득" }
-  }[slot] || { effect: "attackPct", label: "전체 공격" };
+    weapon: { effect: "attackPct", label: abyssT("stat.all_attack") },
+    armor: { effect: "bossDamagePct", label: abyssT("stat.boss_damage") },
+    relic: { effect: "goldPct", label: abyssT("stat.gold_gain") }
+  }[slot] || { effect: "attackPct", label: abyssT("stat.all_attack") };
 }
 
 function gearOwnedEffectValueAtLevel(gear, level) {
@@ -809,27 +799,27 @@ function skinEffects() {
 
 function skinEffectText(skin) {
   const labels = {
-    attackPct: "전체 피해",
-    attackSpeedPct: "공속",
-    goldPct: "골드",
-    soulPct: "영혼석",
-    bossDamagePct: "보스 피해"
+    attackPct: abyssT("stat.all_damage"),
+    attackSpeedPct: abyssT("stat.speed_short"),
+    goldPct: abyssT("stat.gold"),
+    soulPct: abyssT("stat.soul"),
+    bossDamagePct: abyssT("stat.boss_damage")
   };
   const entries = Object.entries(skin.effects || {});
-  if (entries.length === 0) return "보유 효과 없음";
+  if (entries.length === 0) return abyssT("skin.no_effect");
   return entries.map(([key, value]) => `${labels[key]} +${pct(value)}`).join(" / ");
 }
 
 function skinSetEffectText() {
   const effects = skinEffects();
   const parts = [
-    effects.attackPct > 0 ? `피해 +${pct(effects.attackPct)}` : "",
-    effects.bossDamagePct > 0 ? `보스 +${pct(effects.bossDamagePct)}` : "",
-    effects.attackSpeedPct > 0 ? `공속 +${pct(effects.attackSpeedPct)}` : "",
-    effects.goldPct > 0 ? `골드 +${pct(effects.goldPct)}` : "",
-    effects.soulPct > 0 ? `영혼석 +${pct(effects.soulPct)}` : ""
+    effects.attackPct > 0 ? `${abyssT("stat.damage")} +${pct(effects.attackPct)}` : "",
+    effects.bossDamagePct > 0 ? `${abyssT("stat.boss")} +${pct(effects.bossDamagePct)}` : "",
+    effects.attackSpeedPct > 0 ? `${abyssT("stat.speed_short")} +${pct(effects.attackSpeedPct)}` : "",
+    effects.goldPct > 0 ? `${abyssT("stat.gold")} +${pct(effects.goldPct)}` : "",
+    effects.soulPct > 0 ? `${abyssT("stat.soul")} +${pct(effects.soulPct)}` : ""
   ].filter(Boolean);
-  return parts.length > 0 ? parts.join(" · ") : "아직 보유 효과 없음";
+  return parts.length > 0 ? parts.join(" · ") : abyssT("skin.no_owned_effect");
 }
 
 function diamondUpgradeEffects() {
@@ -877,7 +867,7 @@ function enemyDebuffEffects(enemy = app.enemy, stats = null) {
   const rawDamageCutPct = Math.min(0.46, stagePressure + rolePressure + bossPressure + apexPressure);
   const resistPct = Math.min(0.75, Math.max(0, stats?.debuffResistPct ?? calcStats().debuffResistPct ?? 0));
   const damageCutPct = rawDamageCutPct * (1 - resistPct);
-  const label = enemy.role === "curse" ? "저주 압박" : enemy.boss ? "보스 위압" : "심연 압박";
+  const label = enemy.role === "curse" ? abyssT("effect.pressure_curse") : enemy.boss ? abyssT("effect.pressure_boss") : abyssT("effect.pressure_abyss");
   return { damageCutPct, rawDamageCutPct, resistPct, label };
 }
 
@@ -890,8 +880,8 @@ function formatDuration(seconds) {
   const safeSeconds = Math.max(0, Math.floor(seconds));
   const minutes = Math.floor(safeSeconds / 60);
   const rest = safeSeconds % 60;
-  if (minutes <= 0) return `${rest}초`;
-  return `${minutes}분 ${String(rest).padStart(2, "0")}초`;
+  if (minutes <= 0) return abyssT("duration.seconds", { seconds: rest });
+  return abyssT("duration.minutes", { minutes, seconds: String(rest).padStart(2, "0") });
 }
 
 function weaponName() {
@@ -1105,7 +1095,7 @@ async function writeSave() {
 async function spend(actionId, key) {
   const action = ACTION_BY_ID[actionId];
   if (!action) {
-    showToast("선언되지 않은 다이아 액션입니다.");
+    showToast(abyssT("wallet.invalid_action"));
     return false;
   }
   const result = await host.wallet.spend({
@@ -1120,7 +1110,13 @@ async function spend(actionId, key) {
     render();
     return true;
   }
-  showToast(result.message || "다이아 요청이 취소되었습니다.");
+  const failureKey = {
+    cancelled: "wallet.cancelled",
+    insufficient_balance: "wallet.insufficient",
+    invalid_action: "wallet.invalid_action",
+    invalid_idempotency_key: "wallet.invalid_key"
+  }[result.code] || "wallet.failed";
+  showToast(abyssT(failureKey));
   return false;
 }
 
@@ -1233,7 +1229,7 @@ function upgradePurchasePlan(currentLevel, costAtLevel) {
 }
 
 function upgradePlanLabel(plan) {
-  if (plan.maxMode) return plan.levels > 0 ? `최대 +${fmt(plan.levels)}` : "최대";
+  if (plan.maxMode) return plan.levels > 0 ? `${abyssT("common.max")} +${fmt(plan.levels)}` : abyssT("common.max");
   return `+${fmt(plan.levels)} Lv`;
 }
 
@@ -1244,12 +1240,12 @@ function canBuyUpgradePlan(plan) {
 async function buyUpgrade(type) {
   const plan = upgradePurchasePlan(app.save.runUpgrades[type], (level) => upgradeCostAtLevel(type, level));
   if (!canBuyUpgradePlan(plan)) {
-    showToast("골드가 부족합니다.");
+    showToast(abyssT("toast.gold_short"));
     return;
   }
   app.save.gold -= plan.cost;
   app.save.runUpgrades[type] += plan.levels;
-  pushLog(`${upgradeName(type)} +${plan.levels}Lv → Lv.${app.save.runUpgrades[type]}`);
+  pushLog("log.run_upgrade", { name: upgradeName(type), levels: plan.levels, level: app.save.runUpgrades[type] });
   playSfx("upgrade");
   await writeSave();
   render();
@@ -1257,17 +1253,17 @@ async function buyUpgrade(type) {
 
 function upgradeName(type) {
   return {
-    attack: "주문 공격",
-    attackSpeed: "속공 연마",
-    bossBreak: "보스 피해",
-    familiar: "소환수 지휘",
-    greed: "탐욕 의식",
-    chainSpell: "연쇄 주문",
-    weaknessMark: "약점 각인",
-    soulDrain: "영혼 흡수",
-    abyssPierce: "심연 관통",
-    vanguardOrder: "전열 지휘",
-    abyssResistance: "심연 저항"
+    attack: abyssT("upgrade.run_attack"),
+    attackSpeed: abyssT("upgrade.run_attack_speed"),
+    bossBreak: abyssT("upgrade.run_boss_break"),
+    familiar: abyssT("upgrade.run_familiar"),
+    greed: abyssT("upgrade.run_greed"),
+    chainSpell: abyssT("upgrade.run_chain_spell"),
+    weaknessMark: abyssT("upgrade.run_weakness"),
+    soulDrain: abyssT("upgrade.run_soul_drain"),
+    abyssPierce: abyssT("upgrade.run_abyss_pierce"),
+    vanguardOrder: abyssT("upgrade.run_vanguard"),
+    abyssResistance: abyssT("upgrade.run_resistance")
   }[type];
 }
 
@@ -1283,12 +1279,12 @@ function weaponCost() {
 async function buyWeapon() {
   const plan = upgradePurchasePlan(app.save.weaponLevel, weaponCostAtLevel);
   if (!canBuyUpgradePlan(plan)) {
-    showToast("골드가 부족합니다.");
+    showToast(abyssT("toast.gold_short"));
     return;
   }
   app.save.gold -= plan.cost;
   app.save.weaponLevel += plan.levels;
-  pushLog(`${weaponName()} +${plan.levels}Lv → Lv.${app.save.weaponLevel}`);
+  pushLog("log.weapon_upgrade", { name: weaponName(), levels: plan.levels, level: app.save.weaponLevel });
   playSfx("upgrade");
   await writeSave();
   render();
@@ -1309,12 +1305,12 @@ async function buyQuest(id) {
   if (!quest) return;
   const plan = upgradePurchasePlan(questLevel(id), (level) => questCostAtLevel(id, level));
   if (!canBuyUpgradePlan(plan)) {
-    showToast("골드가 부족합니다.");
+    showToast(abyssT("toast.gold_short"));
     return;
   }
   app.save.gold -= plan.cost;
   app.save.questLevels[id] = questLevel(id) + plan.levels;
-  pushLog(`${quest.name} +${plan.levels}Lv → Lv.${app.save.questLevels[id]}`);
+  pushLog("log.quest_upgrade", { name: quest.name, levels: plan.levels, level: app.save.questLevels[id] });
   playSfx("upgrade", 0.82);
   await writeSave();
   render();
@@ -1330,12 +1326,12 @@ async function buyTreasure(id) {
   if (!treasure) return;
   const cost = treasureCost(treasure);
   if (app.save.souls < cost) {
-    showToast("영혼석이 부족합니다.");
+    showToast(abyssT("toast.soul_short"));
     return;
   }
   app.save.souls -= cost;
   app.save.treasures[id] = treasureLevel(id) + 1;
-  pushLog(`${treasure.name} Lv.${app.save.treasures[id]} 강화`);
+  pushLog("log.treasure_upgrade", { name: treasure.name, level: app.save.treasures[id] });
   playSfx("upgrade", 0.9);
   await writeSave();
   render();
@@ -1348,32 +1344,37 @@ function treasureEffectText(treasure) {
   if (treasure.effect === "critPct") {
     const current = criticalProfile(currentValue);
     const next = criticalProfile(nextValue);
-    return `치명률 ${pct(current.critChancePct)} → ${pct(next.critChancePct)} / 치명 피해 ${multiplierText(current.critDamageMult)} → ${multiplierText(next.critDamageMult)}`;
+    return abyssT("treasure.crit_next", {
+      currentChance: pct(current.critChancePct),
+      nextChance: pct(next.critChancePct),
+      currentDamage: multiplierText(current.critDamageMult),
+      nextDamage: multiplierText(next.critDamageMult)
+    });
   }
   if (treasure.effect === "normalSummonDiscountPct") {
-    return `일반 소환 비용 -${pct(currentValue)} → -${pct(nextValue)}`;
+    return abyssT("treasure.discount_next", { current: pct(currentValue), next: pct(nextValue) });
   }
-  const labels = {
-    bossRewardPct: "보스 보상",
-    debuffResistPct: "압박 저항",
-    weaknessBonusPct: "상성 피해",
-    lowHpBossDamagePct: "마무리 보스 피해",
-    bossSoulPct: "보스 영혼석",
-    rebirthSoulPct: "환생 영혼석",
-    soulPct: "보유 영혼석 피해",
-    weaponPct: "회차 무기 ATK"
+  const labelKeys = {
+    bossRewardPct: "stat.boss_reward",
+    debuffResistPct: "stat.pressure_resist",
+    weaknessBonusPct: "stat.counter_damage",
+    lowHpBossDamagePct: "stat.execution_damage",
+    bossSoulPct: "stat.boss_soul",
+    rebirthSoulPct: "stat.rebirth_soul",
+    soulPct: "stat.owned_soul_damage",
+    weaponPct: "stat.run_weapon_atk"
   };
-  const label = labels[treasure.effect];
+  const label = labelKeys[treasure.effect] ? abyssT(labelKeys[treasure.effect]) : "";
   if (label) return `${label} +${pct(currentValue)} → +${pct(nextValue)}`;
-  return `+ ${pct(nextValue)} / 현재 ${pct(currentValue)}`;
+  return abyssT("treasure.current_next", { next: pct(nextValue), current: pct(currentValue) });
 }
 
 function pct(value, digits = 1) {
-  return `${(value * 100).toLocaleString("ko-KR", { maximumFractionDigits: digits })}%`;
+  return `${(value * 100).toLocaleString(abyssLocaleTag(), { maximumFractionDigits: digits })}%`;
 }
 
 function multiplierText(value, digits = 2) {
-  return `x${value.toLocaleString("ko-KR", { maximumFractionDigits: digits })}`;
+  return `x${value.toLocaleString(abyssLocaleTag(), { maximumFractionDigits: digits })}`;
 }
 
 const REBIRTH_REQUIRED_STAGE = 50;
@@ -1405,12 +1406,12 @@ function rebirthReward() {
 async function rebirth() {
   const reward = rebirthReward();
   if (!reward.canRebirth || reward.souls <= 0) {
-    showToast(`환생은 현재 회차 ${reward.requiredStage}층부터 가능합니다. ${reward.remainingStages}층 더 진행하세요.`);
+    showToast(abyssT("rebirth.locked_toast", { stage: reward.requiredStage, remaining: reward.remainingStages }));
     return;
   }
   const ok = await host.ui.confirm({
-    title: "환생",
-    message: `이번 회차를 종료하고 1층부터 다시 시작합니다. 영혼석 ${reward.souls}개를 얻고, 동료·장비·보물·소환 천장은 유지됩니다.`
+    title: abyssT("rebirth.title"),
+    message: abyssT("rebirth.confirm", { souls: reward.souls })
   });
   if (!ok) return;
   app.save.souls += reward.souls;
@@ -1425,7 +1426,7 @@ async function rebirth() {
   app.questGoldCarry = 0;
   app.pendingOfflineGold = 0;
   app.save.runUpgrades = clone(DEFAULT_SAVE.runUpgrades);
-  pushLog(`환생 완료. 영혼석 +${reward.souls}`);
+  pushLog("log.rebirth", { souls: reward.souls });
   nextEnemy();
   playSfx("rebirth");
   await writeSave();
@@ -1508,7 +1509,7 @@ async function summon(mode, kind, count) {
   } else {
     const cost = normalSummonCost(kind, count);
     if (app.save.gold < cost) {
-      showToast("골드가 부족합니다.");
+      showToast(abyssT("toast.gold_short"));
       return;
     }
     app.save.gold -= cost;
@@ -1519,7 +1520,11 @@ async function summon(mode, kind, count) {
     results.push(pullOne(kind, needsRareGuarantee, mode));
   }
   playSfx(results.some((item) => item.rarity === "legendary" || item.rarity === "epic") ? "summonRare" : "summon");
-  pushLog(`${SUMMON_MODES[mode].label} ${kind === "hero" ? "동료" : "장비"} 소환 ${count}회`);
+  pushLog("log.summon", {
+    mode: SUMMON_MODES[mode].label,
+    kind: kind === "hero" ? abyssT("summon.hero") : abyssT("summon.gear"),
+    count
+  });
   await writeSave();
   render();
   showSummonResults(mode, kind, results);
@@ -1531,12 +1536,12 @@ function pick(items) {
 
 function summonResultStatusText(kind, item) {
   if (!item.duplicate) {
-    return kind === "hero" ? "신규 획득 · 공명 개방" : "신규 획득";
+    return abyssT(kind === "hero" ? "summon.result_new_hero" : "summon.result_new");
   }
   if (item.levelUp) {
-    return "이미 보유 · 조각 획득 · Lv 상승";
+    return abyssT("summon.result_level");
   }
-  return "이미 보유 · 조각 획득";
+  return abyssT("summon.result_duplicate");
 }
 
 function showSummonResults(mode, kind, results) {
@@ -1544,10 +1549,10 @@ function showSummonResults(mode, kind, results) {
     <div class="modal summon-result-modal">
       <div class="modal-header split">
         <div>
-          <h2>${SUMMON_MODES[mode].label} ${kind === "hero" ? "동료" : "장비"} 소환 결과</h2>
-          <p class="muted">${kind === "hero" ? "이미 보유한 동료는 조각이 되고, Lv+1 시 편성 효과와 보유 효과가 올라갑니다." : "이미 보유한 장비는 조각이 되고, Lv+1 시 장착 효과와 보유 효과가 올라갑니다."}</p>
+          <h2>${abyssT("summon.result_title", { mode: SUMMON_MODES[mode].label, kind: kind === "hero" ? abyssT("summon.hero") : abyssT("summon.gear") })}</h2>
+          <p class="muted">${abyssT(kind === "hero" ? "summon.result_hero_desc" : "summon.result_gear_desc")}</p>
         </div>
-        <button class="modal-close" data-close-modal aria-label="닫기">닫기</button>
+        <button class="modal-close" data-close-modal aria-label="${abyssT("common.close")}">${abyssT("common.close")}</button>
       </div>
       <div class="modal-body">
         <div class="grid summon-result-grid">
@@ -1566,7 +1571,7 @@ function showSummonResults(mode, kind, results) {
         </div>
       </div>
       <div class="modal-actions">
-        <button class="primary" data-close-modal>확인</button>
+        <button class="primary" data-close-modal>${abyssT("common.confirm")}</button>
       </div>
     </div>
   `;
@@ -1584,7 +1589,7 @@ async function buySkin(id) {
   app.save.ownedSkins[skin.id] = true;
   app.save.activeSkin = skin.id;
   app.save.unlockedSkinAbyss = Boolean(app.save.ownedSkins.abyss);
-  pushLog(`${skin.name} 외형 해금 · ${skinEffectText(skin)}`);
+  pushLog("log.skin_unlock", { name: skin.name, effect: skinEffectText(skin) });
   await writeSave();
   render();
 }
@@ -1796,7 +1801,7 @@ async function playBgmTrack(track) {
     const now = Date.now();
     if (now - bgm.lastBlockedAt > 5000) {
       bgm.lastBlockedAt = now;
-      showToast("브라우저 정책상 화면을 한 번 누르면 BGM이 재생됩니다.");
+      showToast(abyssT("toast.bgm_blocked"));
     }
     return false;
   }
@@ -1921,7 +1926,7 @@ function settingToggleRow(key, title, desc) {
         <strong>${title}</strong>
         <small>${desc}</small>
       </span>
-      <i>${enabled ? "ON" : "OFF"}</i>
+      <i>${enabled ? abyssT("common.on") : abyssT("common.off")}</i>
     </button>
   `;
 }
@@ -1945,41 +1950,52 @@ function openSettingsModal() {
     <div class="modal settings-modal">
       <div class="modal-header split">
         <div>
-          <h2>설정</h2>
-          <p class="muted">전투 화면과 사운드 표시를 조정합니다.</p>
+          <h2>${abyssT("settings.title")}</h2>
+          <p class="muted">${abyssT("settings.description")}</p>
         </div>
-        <button class="modal-close" data-close-modal aria-label="닫기">닫기</button>
+        <button class="modal-close" data-close-modal aria-label="${abyssT("common.close")}">${abyssT("common.close")}</button>
       </div>
       <div class="modal-body settings-body">
+        <div class="settings-language">
+          <span>
+            <strong>${abyssT("language.label")}</strong>
+            <small>${abyssT("language.description")}</small>
+          </span>
+          ${renderLanguagePicker("settings-language-picker")}
+        </div>
         <button class="settings-link" data-open-codex>
           <span>
-            <strong>도감 열기</strong>
-            <small>동료, 장비, 보물, 몬스터 수집률을 확인합니다.</small>
+            <strong>${abyssT("settings.open_codex")}</strong>
+            <small>${abyssT("settings.open_codex_desc")}</small>
           </span>
-          <i>보기</i>
+          <i>${abyssT("common.view")}</i>
         </button>
         <button class="settings-link" data-open-codex="monsters">
           <span>
-            <strong>적 도감</strong>
-            <small>발견한 잡몹과 보스, 역할 정보를 바로 확인합니다.</small>
+            <strong>${abyssT("settings.enemy_codex")}</strong>
+            <small>${abyssT("settings.enemy_codex_desc")}</small>
           </span>
           <i>ENEMY</i>
         </button>
-        ${settingToggleRow("bgmEnabled", "BGM", "던전/보스 전투 음악을 켜거나 끕니다.")}
-        ${settingRangeRow("bgmVolume", "배경음악 크기", "계속 깔리는 던전/보스 음악 볼륨입니다.")}
-        ${settingToggleRow("sfxEnabled", "효과음", "소환, 강화, 환생 같은 짧은 효과음을 켜거나 끕니다.")}
-        ${settingRangeRow("sfxVolume", "효과음 크기", "버튼, 소환, 강화, 환생 효과음 볼륨입니다.")}
-        ${settingToggleRow("damageNumbers", "데미지 숫자", "전투 중 떠오르는 데미지 숫자를 표시합니다.")}
-        ${settingToggleRow("adviceBubble", "조언 말풍선", "주인공 말풍선의 튜토리얼 조언을 표시합니다.")}
-        ${settingToggleRow("reducedMotion", "모션 절감", "전투 연출의 흔들림과 떠오르는 움직임을 줄입니다.")}
+        ${settingToggleRow("bgmEnabled", abyssT("settings.bgm"), abyssT("settings.bgm_desc"))}
+        ${settingRangeRow("bgmVolume", abyssT("settings.bgm_volume"), abyssT("settings.bgm_volume_desc"))}
+        ${settingToggleRow("sfxEnabled", abyssT("settings.sfx"), abyssT("settings.sfx_desc"))}
+        ${settingRangeRow("sfxVolume", abyssT("settings.sfx_volume"), abyssT("settings.sfx_volume_desc"))}
+        ${settingToggleRow("damageNumbers", abyssT("settings.damage"), abyssT("settings.damage_desc"))}
+        ${settingToggleRow("adviceBubble", abyssT("settings.advice"), abyssT("settings.advice_desc"))}
+        ${settingToggleRow("reducedMotion", abyssT("settings.motion"), abyssT("settings.motion_desc"))}
         <div class="settings-status">
-          <strong>저장</strong>
-          <span>진행 상황은 5초마다 자동 저장됩니다.</span>
-          <button data-save-now>지금 저장</button>
+          <strong>${abyssT("settings.save")}</strong>
+          <span>${abyssT("settings.save_desc")}</span>
+          <button data-save-now>${abyssT("settings.save_now")}</button>
+        </div>
+        <div class="settings-credits">
+          <strong>${abyssT("settings.credits")}</strong>
+          <span>${abyssT("settings.credits_desc")}</span>
         </div>
       </div>
       <div class="modal-actions">
-        <button class="primary" data-close-modal>확인</button>
+        <button class="primary" data-close-modal>${abyssT("common.confirm")}</button>
       </div>
     </div>
   `;
@@ -1990,13 +2006,13 @@ async function buyDiamondUpgrade(id) {
   if (!upgrade) return;
   const level = diamondUpgradeLevel(id);
   if (level >= upgrade.max) {
-    showToast("이미 최대 레벨입니다.");
+    showToast(abyssT("shop.max_level"));
     return;
   }
   const ok = await spend(upgrade.action, `${PACK_ID}:diamond-upgrade:${id}:${level + 1}`);
   if (!ok) return;
   app.save.diamondUpgrades[id] = level + 1;
-  pushLog(`${upgrade.name} Lv.${level + 1} 해금`);
+  pushLog("log.upgrade_unlock", { name: upgrade.name, level: level + 1 });
   await writeSave();
   render();
 }
@@ -2007,7 +2023,7 @@ async function buyConsumable(id) {
   const ok = await spend(item.action, `${PACK_ID}:consumable:${id}:${Date.now()}`);
   if (!ok) return;
   app.save.consumables[id] = consumableCount(id) + 1;
-  pushLog(`${item.name} 보관 +1`);
+  pushLog("log.consumable_store", { name: item.name });
   await writeSave();
   render();
 }
@@ -2029,24 +2045,24 @@ async function useConsumable(id) {
   if (!item) return;
   const count = consumableCount(id);
   if (count <= 0) {
-    showToast("보유한 소모품이 없습니다.");
+    showToast(abyssT("shop.no_consumable"));
     return;
   }
   app.save.consumables[id] = count - 1;
   if (id === "battle-catalyst") {
     const startAt = Math.max(Date.now(), Number(app.save.activeBoosts.battleCatalystUntil) || 0);
     app.save.activeBoosts.battleCatalystUntil = startAt + BATTLE_CATALYST_DURATION_MS;
-    pushLog("전투 촉매 사용. 5분 동안 피해/공속 증가");
+    pushLog("log.catalyst");
   } else if (id === "gold-seal") {
     const gold = instantGoldReward();
     app.save.gold += gold;
     app.save.stats.totalGoldEarned += gold;
-    pushLog(`금고 봉인서 사용. 골드 +${fmt(gold)}`);
+    pushLog("log.gold_seal", { gold: fmt(gold) });
   } else if (id === "soul-candle") {
     const souls = instantSoulReward();
     app.save.souls += souls;
     app.save.stats.soulsEarned += souls;
-    pushLog(`영혼 촛불 사용. 영혼석 +${fmt(souls)}`);
+    pushLog("log.soul_candle", { souls: fmt(souls) });
   }
   await writeSave();
   render();
@@ -2054,7 +2070,7 @@ async function useConsumable(id) {
 
 async function claimOffline(multiplier, premium) {
   if (app.pendingOfflineGold <= 0) {
-    showToast("정산할 방치 보상이 없습니다.");
+    showToast(abyssT("toast.offline_empty"));
     return;
   }
   if (premium) {
@@ -2065,7 +2081,7 @@ async function claimOffline(multiplier, premium) {
   app.save.gold += gold;
   app.save.stats.totalGoldEarned += gold;
   app.pendingOfflineGold = 0;
-  pushLog(`방치 보상 정산 +${fmt(gold)} 골드`);
+  pushLog("log.offline", { gold: fmt(gold) });
   await writeSave();
   render();
 }
@@ -2246,25 +2262,25 @@ function escapeHtml(value) {
 
 function speechTips(stats, enemy, progress, reward) {
   const tips = [
-    "골드는 퀘스트와 무기 강화에 먼저 쓰면 초반 진행이 빨라진다.",
-    "다이아 소환은 프리미엄 뽑기다. 확률과 천장은 소환 탭에서 확인해라.",
-    "중복 소환은 조각이 되고, 조각이 차면 동료와 장비 레벨이 오른다.",
-    "편성하지 않은 동료도 예비대와 보유 효과로 전투에 기여한다.",
-    "50층 이후 보스 피가 잘 안 줄면 환생해서 영혼석 보물을 올릴 타이밍이다.",
-    "장비는 부위별로 장착 효과와 보유 효과가 따로 적용된다.",
-    "전투 촉매는 짧은 시간 피해와 공속을 올린다. 보스 돌파 전에 쓰면 좋다.",
-    "1000층 이후부터 적의 심연 압박이 켜진다. 버프 아이콘에 마우스를 올려 확인해라."
+    abyssT("tip.gold_first"),
+    abyssT("tip.premium"),
+    abyssT("tip.duplicates"),
+    abyssT("tip.reserve"),
+    abyssT("tip.rebirth"),
+    abyssT("tip.gear"),
+    abyssT("tip.catalyst"),
+    abyssT("tip.pressure")
   ];
-  if (app.tab === "quest") tips.unshift(`퀘스트 골드가 ${fmtRate(questGoldPerSecond())}/초 들어온다. 자동 수입의 뼈대다.`);
-  if (app.tab === "weapon") tips.unshift("무기 탭은 직접 전투 체감이 크다. 공속과 보스 피해를 같이 올려라.");
-  if (app.tab === "summon") tips.unshift("일반 소환은 골드, 프리미엄 소환은 다이아를 쓴다. 프리미엄이 희귀 확률이 높다.");
-  if (app.tab === "heroes") tips.unshift(`현재 보유 동료 ${stats.roster.uniqueCount}명. 안 쓰는 동료도 보유 효과가 있다.`);
-  if (app.tab === "gear") tips.unshift("장비는 무기/갑옷/유물 필터로 나눠 보고, 각 부위 최고 점수를 장착해라.");
-  if (app.tab === "treasure") tips.unshift("보물은 환생해도 초기화되지 않는 장기 성장축이다.");
-  if (app.tab === "shop") tips.unshift("상점의 특수능력과 외형 보유 효과는 환생해도 유지된다.");
-  if (enemy.boss && reward.canRebirth) tips.unshift(`막히면 환생해라. 지금 영혼석 ${fmt(reward.souls)}개를 받을 수 있다.`);
-  if (enemy.boss && enemy.hp / enemy.maxHp > 0.55) tips.unshift("보스 피가 천천히 줄면 보스 피해, 공속, 환생 보물을 확인해라.");
-  if (progress.stage >= 1000) tips.unshift("심연 압박이 켜지는 구간이다. 적 디버프 아이콘을 확인해라.");
+  if (app.tab === "quest") tips.unshift(abyssT("tip.quest_tab", { rate: fmtRate(questGoldPerSecond()) }));
+  if (app.tab === "weapon") tips.unshift(abyssT("tip.weapon_tab"));
+  if (app.tab === "summon") tips.unshift(abyssT("tip.summon_tab"));
+  if (app.tab === "heroes") tips.unshift(abyssT("tip.heroes_tab", { count: stats.roster.uniqueCount }));
+  if (app.tab === "gear") tips.unshift(abyssT("tip.gear_tab"));
+  if (app.tab === "treasure") tips.unshift(abyssT("tip.treasure_tab"));
+  if (app.tab === "shop") tips.unshift(abyssT("tip.shop_tab"));
+  if (enemy.boss && reward.canRebirth) tips.unshift(abyssT("tip.rebirth_ready", { souls: fmt(reward.souls) }));
+  if (enemy.boss && enemy.hp / enemy.maxHp > 0.55) tips.unshift(abyssT("tip.boss_slow"));
+  if (progress.stage >= 1000) tips.unshift(abyssT("tip.pressure_active"));
   return tips;
 }
 

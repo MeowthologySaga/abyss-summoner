@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-locale="ko">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -7,26 +7,30 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
     />
-    <title>심연의 무명소환사</title>
-    <link rel="icon" href="../assets/icon.webp" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=20260629-effectrings1" />
+    <title>Abyss Summoner</title>
+    <link rel="icon" href="../assets/icon.webp" type="image/webp" />
+    <link rel="stylesheet" href="./styles.css?v=20260715-i18n1" />
   </head>
   <body>
-    <main id="app" aria-label="Abyss Summoner PlayZone cartridge">
-      <canvas id="battleCanvas" width="1280" height="520" aria-label="자동전투 화면"></canvas>
+    <main id="app" aria-label="Abyss Summoner game">
+      <canvas id="battleCanvas" width="1280" height="520" aria-label="Auto-battle arena"></canvas>
       <section id="ui" class="ui" aria-live="polite"></section>
       <section id="modalLayer" class="modal-layer"></section>
       <section id="toastLayer" class="toast-layer" aria-live="polite"></section>
+      <section id="startLayer" class="start-layer" aria-live="polite"></section>
     </main>
-    <script src="./data/economy-config.js?v=20260629-effectrings1"></script>
-    <script src="./data/catalog-config.js?v=20260703-companionnorm1"></script>
-    <script src="./core/state.js?v=20260629-effectrings1"></script>
-    <script src="./core/progression.js?v=20260703-bgmvar2"></script>
-    <script src="./core/battle.js?v=20260629-effectrings1"></script>
-    <script src="./ui/ui-renderer.js?v=20260629-effectrings1"></script>
-    <script src="./render/canvas-renderer.js?v=20260629-effectrings1"></script>
-    <script src="./input/events.js?v=20260629-effectrings1"></script>
+    <script src="./i18n/i18n.js?v=20260715-i18n1"></script>
+    <script src="./data/economy-config.js?v=20260715-i18n1"></script>
+    <script src="./data/catalog-config.js?v=20260715-i18n1"></script>
+    <script src="./core/state.js?v=20260715-i18n1"></script>
+    <script src="./core/progression.js?v=20260715-i18n1"></script>
+    <script src="./core/battle.js?v=20260715-i18n1"></script>
+    <script src="./ui/start-screen.js?v=20260715-i18n1"></script>
+    <script src="./ui/ui-renderer.js?v=20260715-i18n1"></script>
+    <script src="./render/canvas-renderer.js?v=20260715-i18n1"></script>
+    <script src="./input/events.js?v=20260715-i18n1"></script>
+    <script src="./mock-host.js?v=20260715-i18n1"></script>
     <script src="./host-adapter.js?v=20260629-effectrings1"></script>
-    <script src="./main.js?v=20260703-bgmvar2"></script>
+    <script src="./main.js?v=20260715-i18n1"></script>
   </body>
 </html>

@@ -162,9 +162,15 @@ function drawCombatStatusPanel(w, h, floorY, enemy, stats, compact, hudBand = 0)
   const hpPct = Math.max(0, Math.min(1, enemy.hp / enemy.maxHp));
   const bossBonus = enemy.boss ? 1 + stats.bossDamagePct : 1;
   const effectiveDps = damageAfterEnemyDebuff(stats.dps * bossBonus * bossHighHpMultiplier(enemy, stats) * bossLowHpMultiplier(enemy, stats), enemy, stats);
-  const labelLimit = compact ? 6 : 8;
+  const labelLimit = window.ABYSS_SUMMONER_I18N.getLocale() === "en" ? (compact ? 12 : 18) : (compact ? 6 : 8);
   const enemyLabel = enemy.name.length > labelLimit ? `${enemy.name.slice(0, labelLimit)}…` : enemy.name;
-  const enemyKind = enemy.apexBoss ? "100층 보스" : enemy.gateBoss ? "10층 보스" : enemy.boss ? "층 보스" : "일반";
+  const enemyKind = enemy.apexBoss
+    ? abyssT("battle.apex_boss")
+    : enemy.gateBoss
+      ? abyssT("battle.gate_boss")
+      : enemy.boss
+        ? abyssT("battle.floor_boss")
+        : abyssT("battle.normal");
   const roleLabel = ROLES[enemy.role].label;
 
   ctx.save();
@@ -193,10 +199,10 @@ function drawCombatStatusPanel(w, h, floorY, enemy, stats, compact, hudBand = 0)
   ctx.fillStyle = "#f6efe7";
   ctx.textAlign = "left";
   ctx.font = `900 ${compact ? 9 : 11}px sans-serif`;
-  ctx.fillText(`실전 DPS ${fmt(effectiveDps)}`, panelX + 10, panelY + 44);
+  ctx.fillText(abyssT("battle.dps", { value: fmt(effectiveDps) }), panelX + 10, panelY + 44);
   ctx.textAlign = "right";
   ctx.fillStyle = "#f5c76a";
-  ctx.fillText(`HP ${pct(hpPct, 0)} · 치명 ${pct(stats.critChancePct, 0)}`, panelX + panelW - 10, panelY + 44);
+  ctx.fillText(abyssT("battle.hp_crit", { hp: pct(hpPct, 0), crit: pct(stats.critChancePct, 0) }), panelX + panelW - 10, panelY + 44);
   ctx.restore();
 }
 

@@ -1008,6 +1008,20 @@ const QUESTS = [
 
 const TREASURES = ECONOMY_CONFIG.treasures;
 
+const CONTENT_I18N = window.ABYSS_SUMMONER_I18N;
+if (!CONTENT_I18N) {
+  throw new Error("i18n.js must be loaded before catalog-config.js");
+}
+CONTENT_I18N.bindCatalog(SKINS, "skins");
+CONTENT_I18N.bindCatalog(ROLES, "roles");
+CONTENT_I18N.bindCatalog(HEROES, "heroes");
+CONTENT_I18N.bindCatalog(GEARS, "gear");
+CONTENT_I18N.bindCatalog(MONSTER_ZONE_CATALOG, "zones");
+CONTENT_I18N.bindCatalog(ENEMY_VARIANTS, "monsters");
+CONTENT_I18N.bindCatalog(BOSS_VARIANTS, "bosses");
+CONTENT_I18N.bindCatalog(WEAPON_CHAIN, "weapons");
+CONTENT_I18N.bindCatalog(QUESTS, "quests");
+
 window.ABYSS_SUMMONER_DATA = {
   PACK_ID,
   SAVE_KEY,

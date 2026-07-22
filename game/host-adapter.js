@@ -13,6 +13,6 @@
     if (window.LEM_GAME_HOST_API) {
       return window.LEM_GAME_HOST_API;
     }
-    throw new Error("Abyss Summoner must be launched from the Language Miner PlayZone host.");
+    return window.createMockHostApi(diamondActions);
   };
 })();

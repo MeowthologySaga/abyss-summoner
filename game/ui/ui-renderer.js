@@ -16,33 +16,33 @@ function render(force = false) {
   ui.innerHTML = `
     <header class="topbar">
       <div class="buff-row">
-        <span>⚔ ${fmt(stats.dps)}</span>
-        <span>☼ ${fmt(stats.goldMult * 100)}%</span>
-        <span>◆ ${fmt(stats.power)}</span>
+        <span aria-label="${abyssT("battle.dps", { value: fmt(stats.dps) })}">⚔ ${fmt(stats.dps)}</span>
+        <span aria-label="${abyssT("stat.gold_gain")} ${fmt(stats.goldMult * 100)}%">☼ ${fmt(stats.goldMult * 100)}%</span>
+        <span aria-label="${abyssT("heroes.power", { value: fmt(stats.power) })}">◆ ${fmt(stats.power)}</span>
       </div>
       <div class="floor-title">
-        <strong>${progress.stage}층 심연</strong>
-        <span>${progress.progressText} 진행 중</span>
+        <strong>${abyssT("battle.depth_title", { stage: progress.stage })}</strong>
+        <span>${abyssT("battle.progress", { progress: progress.progressText })}</span>
       </div>
-      <button class="menu-button" data-open-settings>MENU</button>
+      <button class="menu-button" data-open-settings>${abyssT("common.menu")}</button>
     </header>
     ${renderCombatEffectRail(stats, enemy)}
     ${app.settings.adviceBubble ? `<div class="speech-bubble">${escapeHtml(speechText)}</div>` : ""}
     <div class="resource-ledger">
-      <div class="resource-coin"><span class="res-icon coin"></span><strong>${fmt(app.save.gold)}</strong><small class="resource-rate">+${fmtRate(questGoldPerSecond())}/초</small></div>
-      <div class="resource-soul"><span class="res-icon soul"></span><strong>${fmt(app.save.souls)}</strong></div>
-      <div class="resource-diamond"><span class="res-icon diamond"></span><strong>${fmt(app.walletBalance)}</strong></div>
+      <div class="resource-coin" aria-label="${abyssT("currency.gold")} ${fmt(app.save.gold)}"><span class="res-icon coin" aria-hidden="true"></span><strong>${fmt(app.save.gold)}</strong><small class="resource-rate">+${abyssT("common.per_second", { value: fmtRate(questGoldPerSecond()) })}</small></div>
+      <div class="resource-soul" aria-label="${abyssT("currency.soul")} ${fmt(app.save.souls)}"><span class="res-icon soul" aria-hidden="true"></span><strong>${fmt(app.save.souls)}</strong></div>
+      <div class="resource-diamond" aria-label="${abyssT("currency.diamond")} ${fmt(app.walletBalance)}"><span class="res-icon diamond" aria-hidden="true"></span><strong>${fmt(app.walletBalance)}</strong></div>
     </div>
     <footer class="bottombar">
       <nav class="nav-row">
-        ${navButton("quest", "퀘스트")}
-        ${navButton("weapon", "무기")}
-        ${navButton("summon", "소환")}
-        ${navButton("heroes", "동료")}
-        ${navButton("gear", "장비")}
-        ${navButton("treasure", "보물")}
-        ${navButton("shop", "상점")}
-        ${navButton("rebirth", "환생")}
+        ${navButton("quest", "nav.quest")}
+        ${navButton("weapon", "nav.weapon")}
+        ${navButton("summon", "nav.summon")}
+        ${navButton("heroes", "nav.heroes")}
+        ${navButton("gear", "nav.gear")}
+        ${navButton("treasure", "nav.treasure")}
+        ${navButton("shop", "nav.shop")}
+        ${navButton("rebirth", "nav.rebirth")}
       </nav>
       <section class="panel" data-panel-tab="${app.tab}">${renderPanel()}</section>
     </footer>
@@ -50,8 +50,9 @@ function render(force = false) {
   restorePanelScroll();
 }
 
-function navButton(tab, label) {
-  return `<button class="${app.tab === tab ? "active" : ""}" data-tab="${tab}"><span class="nav-icon nav-${tab}"></span><span>${label}</span></button>`;
+function navButton(tab, labelKey) {
+  const label = abyssT(labelKey);
+  return `<button class="${app.tab === tab ? "active" : ""}" data-tab="${tab}" aria-label="${label}"><span class="nav-icon nav-${tab}"></span><span>${label}</span></button>`;
 }
 
 function renderCombatEffectRail(stats, enemy) {
@@ -66,81 +67,81 @@ function buildCombatEffectGroups(stats, enemy) {
   const boost = activeBoostEffects();
   const debuff = enemyDebuffEffects(enemy, stats);
   const firepowerRows = [
-    `실전 DPS ${fmt(stats.dps)}`,
-    `주인공 ${fmtRate(stats.summonerDps)} / 동료 ${fmtRate(stats.familiarDps)}`,
-    `공격속도 x${stats.attackSpeedMult.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}`,
-    `치명 ${pct(stats.critChancePct)} / 피해 x${stats.critDamageMult.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}`,
-    `추가 투사체 ${pct(stats.projectileChancePct)}`
+    abyssT("effect.live_dps", { value: fmt(stats.dps) }),
+    abyssT("effect.summoner_companion", { summoner: fmtRate(stats.summonerDps), companion: fmtRate(stats.familiarDps) }),
+    abyssT("effect.attack_speed", { value: stats.attackSpeedMult.toLocaleString(abyssLocaleTag(), { maximumFractionDigits: 2 }) }),
+    abyssT("effect.crit", { chance: pct(stats.critChancePct), damage: stats.critDamageMult.toLocaleString(abyssLocaleTag(), { maximumFractionDigits: 2 }) }),
+    abyssT("effect.extra_projectile", { value: pct(stats.projectileChancePct) })
   ];
   if (boost.battleCatalystActive) {
-    firepowerRows.push(`전투 촉매: 피해 +20% / 공속 +20% · ${formatDuration(boost.battleCatalystRemaining)}`);
+    firepowerRows.push(abyssT("effect.catalyst_active", { time: formatDuration(boost.battleCatalystRemaining) }));
   } else {
-    firepowerRows.push("전투 촉매 비활성");
+    firepowerRows.push(abyssT("effect.catalyst_inactive"));
   }
   const curseRows = debuff.damageCutPct > 0
     ? [
-        `${debuff.label}: 아군 최종 피해 -${pct(debuff.damageCutPct)}`,
-        `원 압박 ${pct(debuff.rawDamageCutPct)}`,
-        `압박 저항 ${pct(debuff.resistPct)} 적용`,
-        "층수/적 역할로 압박 강화"
+        abyssT("effect.pressure_damage", { label: debuff.label, value: pct(debuff.damageCutPct) }),
+        abyssT("effect.raw_pressure", { value: pct(debuff.rawDamageCutPct) }),
+        abyssT("effect.pressure_resist_applied", { value: pct(debuff.resistPct) }),
+        abyssT("effect.pressure_scales")
       ]
     : [
-        "현재 압박 없음",
-        `압박 저항 ${pct(stats.debuffResistPct)} 보유`,
-        "1000층 이후 발동",
-        "저주/보스 압박 강화"
+        abyssT("effect.no_pressure"),
+        abyssT("effect.pressure_resist_owned", { value: pct(stats.debuffResistPct) }),
+        abyssT("effect.pressure_after_1000"),
+        abyssT("effect.curse_boss_pressure")
       ];
   return [
     {
       id: "firepower",
-      label: "화력",
+      label: abyssT("effect.firepower"),
       tone: "positive",
       icon: "../assets/generated/effect-icons-v1/effect-firepower.webp",
       active: stats.dps > 0 || boost.battleCatalystActive,
       progress: Math.max(0.12, Math.min(1, stats.attackSpeedMult / 3.25)),
-      summary: boost.battleCatalystActive ? "촉매 적용 중" : `DPS ${fmt(stats.dps)}`,
+      summary: boost.battleCatalystActive ? abyssT("effect.catalyst_summary") : `DPS ${fmt(stats.dps)}`,
       rows: firepowerRows
     },
     {
       id: "resonance",
-      label: "공명",
+      label: abyssT("effect.resonance"),
       tone: "positive",
       icon: "../assets/generated/effect-icons-v1/effect-resonance.webp",
       active: (stats.roster?.uniqueCount || 0) >= 3 || stats.gearPower > 0,
       progress: Math.max(0.08, Math.min(1, (stats.roster?.uniqueCount || 0) / HEROES.length)),
-      summary: `동료 ${fmt(stats.roster?.uniqueCount || 0)}명`,
+      summary: abyssT("effect.companion_count", { value: fmt(stats.roster?.uniqueCount || 0) }),
       rows: [
-        `보유 동료 ${fmt(stats.roster?.uniqueCount || 0)}/${HEROES.length}`,
-        `예비대 DPS ${fmtRate(stats.roster?.reserveDps || 0)} (${pct(stats.roster?.reserveShare || 0)})`,
-        `동료 공명 공격 +${pct(stats.roster?.attackPct || 0)}`,
-        `장비 수집 공격 +${pct(stats.gearCollection?.attackPct || 0)}`,
-        `장비 전투력 ${fmt(stats.gearPower)}`
+        abyssT("effect.owned_companions", { owned: fmt(stats.roster?.uniqueCount || 0), total: HEROES.length }),
+        abyssT("effect.reserve_dps", { value: fmtRate(stats.roster?.reserveDps || 0), share: pct(stats.roster?.reserveShare || 0) }),
+        abyssT("effect.resonance_attack", { value: pct(stats.roster?.attackPct || 0) }),
+        abyssT("effect.gear_collection_attack", { value: pct(stats.gearCollection?.attackPct || 0) }),
+        abyssT("effect.gear_power", { value: fmt(stats.gearPower) })
       ]
     },
     {
       id: "curse",
-      label: "저주",
+      label: abyssT("effect.curse"),
       tone: "curse",
       icon: "../assets/generated/effect-icons-v1/effect-curse.webp",
       active: debuff.damageCutPct > 0,
       progress: Math.max(0.08, Math.min(1, (debuff.rawDamageCutPct || 0) / 0.46)),
-      summary: debuff.damageCutPct > 0 ? `피해 -${pct(debuff.damageCutPct)}` : "압박 대기",
+      summary: debuff.damageCutPct > 0 ? abyssT("effect.damage_down", { value: pct(debuff.damageCutPct) }) : abyssT("effect.pressure_waiting"),
       rows: curseRows
     },
     {
       id: "boss",
-      label: "보스전",
+      label: abyssT("effect.boss"),
       tone: "positive",
       icon: "../assets/generated/effect-icons-v1/effect-boss.webp",
       active: enemy?.boss || stats.bossDamagePct > 0,
       progress: Math.max(0.08, Math.min(1, stats.bossDamagePct / 2)),
-      summary: enemy?.boss ? "보스전 적용 중" : `보스 피해 +${pct(stats.bossDamagePct)}`,
+      summary: enemy?.boss ? abyssT("effect.boss_active") : abyssT("effect.boss_damage", { value: pct(stats.bossDamagePct) }),
       rows: [
-        `보스 피해 +${pct(stats.bossDamagePct)}`,
-        `고HP 보스 피해 +${pct(stats.highHpBossDamagePct)}`,
-        `저HP 보스 피해 +${pct(stats.lowHpBossDamagePct)}`,
-        `보스 보상 +${pct(stats.bossRewardPct)}`,
-        enemy?.boss ? "현재 보스전 효과 적용 중" : "보스전에서 자동 적용"
+        abyssT("effect.boss_damage", { value: pct(stats.bossDamagePct) }),
+        abyssT("effect.high_hp_boss", { value: pct(stats.highHpBossDamagePct) }),
+        abyssT("effect.low_hp_boss", { value: pct(stats.lowHpBossDamagePct) }),
+        abyssT("effect.boss_reward", { value: pct(stats.bossRewardPct) }),
+        enemy?.boss ? abyssT("effect.boss_current") : abyssT("effect.boss_auto")
       ]
     }
   ];
@@ -149,7 +150,7 @@ function buildCombatEffectGroups(stats, enemy) {
 function renderCombatEffectOrb(group) {
   const open = app.effectTooltipId === group.id;
   return `
-    <button type="button" class="effect-orb ${group.tone} ${group.active ? "is-active" : "is-muted"} ${open ? "is-open" : ""}" data-effect-group="${group.id}" aria-label="${group.label} 효과 상세" aria-expanded="${open ? "true" : "false"}" style="--buff-progress:${group.progress}">
+    <button type="button" class="effect-orb ${group.tone} ${group.active ? "is-active" : "is-muted"} ${open ? "is-open" : ""}" data-effect-group="${group.id}" aria-label="${abyssT("effect.details_label", { label: group.label })}" aria-expanded="${open ? "true" : "false"}" style="--buff-progress:${group.progress}">
       <img src="${group.icon}" alt="" aria-hidden="true" loading="eager" decoding="async">
       <i></i>
     </button>
@@ -186,15 +187,15 @@ function renderPanel() {
 
 function renderUpgradeStepControl() {
   const buttons = UPGRADE_STEP_OPTIONS.map((option) => `
-    <button class="${app.upgradeStep === option.value ? "active" : ""}" data-upgrade-step="${option.value}">${option.label}</button>
+    <button class="${app.upgradeStep === option.value ? "active" : ""}" data-upgrade-step="${option.value}">${option.labelKey ? abyssT(option.labelKey) : option.label}</button>
   `).join("");
   return `
     <div class="upgrade-toolbar">
       <div class="upgrade-toolbar-copy">
-        <strong>1회 강화량</strong>
-        <span>선택한 레벨 수만큼 비용을 합산합니다.</span>
+        <strong>${abyssT("upgrade.amount")}</strong>
+        <span>${abyssT("upgrade.amount_desc")}</span>
       </div>
-      <div class="upgrade-stepper" role="group" aria-label="한 번에 올릴 레벨 수">
+      <div class="upgrade-stepper" role="group" aria-label="${abyssT("upgrade.amount_label")}">
         ${buttons}
       </div>
     </div>
@@ -206,19 +207,21 @@ function renderWeaponPanel() {
   const reward = rebirthReward();
   const stats = calcStats();
   const weaponPlan = upgradePurchasePlan(app.save.weaponLevel, weaponCostAtLevel);
-  const rebirthLabel = reward.canRebirth ? `환생 ${fmt(reward.souls)}영혼석` : `환생 ${reward.remainingStages}층 남음`;
+  const rebirthLabel = reward.canRebirth
+    ? abyssT("upgrade.rebirth_souls", { souls: fmt(reward.souls) })
+    : abyssT("upgrade.rebirth_floors", { floors: reward.remainingStages });
   const upgradeValue = (type) => {
-    if (type === "attack") return `주문 피해 x${Math.pow(1.11, app.save.runUpgrades.attack).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}`;
-    if (type === "attackSpeed") return `공속 x${stats.attackSpeedMult.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}`;
-    if (type === "bossBreak") return `보스 피해 +${pct(stats.bossDamagePct)}`;
-    if (type === "greed") return `골드 +${Math.floor(app.save.runUpgrades[type] * 8)}%`;
-    if (type === "familiar") return `동료 DPS ${fmt(stats.familiarDps)}`;
-    if (type === "chainSpell") return `추가 투사체 ${pct(stats.projectileChancePct)}`;
-    if (type === "weaknessMark") return `상성 피해 x${(1.32 + stats.weaknessBonusPct).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}`;
-    if (type === "soulDrain") return `영혼석 +${pct(stats.weaponEffects.soulPct)}`;
-    if (type === "abyssPierce") return `고HP 보스 피해 +${pct(stats.highHpBossDamagePct)}`;
-    if (type === "vanguardOrder") return `동료 피해 +${pct(stats.weaponEffects.vanguardPct)}`;
-    if (type === "abyssResistance") return `압박 저항 +${pct(stats.debuffResistPct)}`;
+    if (type === "attack") return abyssT("upgrade.spell_damage", { value: Math.pow(1.11, app.save.runUpgrades.attack).toLocaleString(abyssLocaleTag(), { maximumFractionDigits: 2 }) });
+    if (type === "attackSpeed") return abyssT("upgrade.speed", { value: stats.attackSpeedMult.toLocaleString(abyssLocaleTag(), { maximumFractionDigits: 2 }) });
+    if (type === "bossBreak") return abyssT("effect.boss_damage", { value: pct(stats.bossDamagePct) });
+    if (type === "greed") return abyssT("upgrade.gold_bonus", { value: Math.floor(app.save.runUpgrades[type] * 8) });
+    if (type === "familiar") return abyssT("upgrade.companion_dps", { value: fmt(stats.familiarDps) });
+    if (type === "chainSpell") return abyssT("effect.extra_projectile", { value: pct(stats.projectileChancePct) });
+    if (type === "weaknessMark") return abyssT("upgrade.weakness", { value: (1.32 + stats.weaknessBonusPct).toLocaleString(abyssLocaleTag(), { maximumFractionDigits: 2 }) });
+    if (type === "soulDrain") return abyssT("upgrade.soul_bonus", { value: pct(stats.weaponEffects.soulPct) });
+    if (type === "abyssPierce") return abyssT("effect.high_hp_boss", { value: pct(stats.highHpBossDamagePct) });
+    if (type === "vanguardOrder") return `${abyssT("summon.hero")} ${abyssT("stat.damage")} +${pct(stats.weaponEffects.vanguardPct)}`;
+    if (type === "abyssResistance") return abyssT("upgrade.pressure_resist", { value: pct(stats.debuffResistPct) });
     return "";
   };
   const spellRows = ["attack", "attackSpeed", "bossBreak", "familiar", "greed", "chainSpell", "weaknessMark", "soulDrain", "abyssPierce", "vanguardOrder", "abyssResistance"]
@@ -241,9 +244,9 @@ function renderWeaponPanel() {
       ${upgradeRow({
         icon: "custom",
         art: weaponUiIcon("abyssGate"),
-        title: "심연문",
-        desc: `${progress.stage}층 ${progress.progressText} 진행 중`,
-        value: reward.canRebirth ? "이번 회차 환생 가능" : `현재 ${reward.currentStage}층 · ${reward.remainingStages}층 남음`,
+        title: abyssT("upgrade.gate"),
+        desc: `${abyssT("common.floor", { value: progress.stage })} · ${abyssT("battle.progress", { progress: progress.progressText })}`,
+        value: reward.canRebirth ? abyssT("upgrade.rebirth_ready") : abyssT("upgrade.rebirth_remaining", { current: reward.currentStage, remaining: reward.remainingStages }),
         button: `<button class="${reward.canRebirth ? "primary" : ""}" data-tab="rebirth">${rebirthLabel}</button>`,
         currency: "soul"
       })}
@@ -251,8 +254,8 @@ function renderWeaponPanel() {
         icon: "custom",
         art: weaponUiIcon("runWeapon"),
         title: `${weaponName()} Lv.${app.save.weaponLevel}/99999`,
-        desc: "현재 회차 기본 무기 공격력을 올립니다.",
-        value: `무기 ATK ${fmt(weaponPower())}${weaponPlan.levels > 0 ? ` → ${fmt(weaponPowerAtLevel(weaponPlan.nextLevel))}` : ""}`,
+        desc: abyssT("upgrade.weapon_desc"),
+        value: abyssT("upgrade.weapon_atk", { current: fmt(weaponPower()), next: weaponPlan.levels > 0 ? abyssT("upgrade.current_next", { value: fmt(weaponPowerAtLevel(weaponPlan.nextLevel)) }) : "" }),
         button: `<button class="primary" data-buy-weapon ${!canBuyUpgradePlan(weaponPlan) ? "disabled" : ""}>${actionButton(upgradePlanLabel(weaponPlan), "coin", weaponPlan.cost)}</button>`,
         currency: "coin"
       })}
@@ -269,7 +272,7 @@ function renderQuestPanel() {
       art: questUiIcon(quest.id),
       title: `${quest.name} Lv.${questLevel(quest.id)}/99999`,
       desc: quest.desc,
-      value: `퀘스트 골드: ${fmtRate(questGoldPerSecondFor(quest))} / 초${plan.levels > 0 ? ` · +${fmtRate(questGoldGainForLevels(quest, plan.levels))}/초` : ""}`,
+      value: abyssT("upgrade.quest_gold", { current: fmtRate(questGoldPerSecondFor(quest)), next: plan.levels > 0 ? ` · +${abyssT("common.per_second", { value: fmtRate(questGoldGainForLevels(quest, plan.levels)) })}` : "" }),
       button: `<button class="primary" data-buy-quest="${quest.id}" ${!canBuyUpgradePlan(plan) ? "disabled" : ""}>${actionButton(upgradePlanLabel(plan), "coin", plan.cost)}</button>`,
       currency: "coin"
     });
@@ -279,10 +282,10 @@ function renderQuestPanel() {
     <div class="upgrade-list">
       ${upgradeRow({
         icon: "coin",
-        title: "골드 획득",
-        desc: "퀘스트 자동 수입과 접속하지 않은 시간의 보상입니다.",
-        value: `${fmtRate(questGoldPerSecond())}/초 · 방치 ${fmt(app.pendingOfflineGold)} 골드`,
-        button: `<button data-claim-offline ${app.pendingOfflineGold <= 0 ? "disabled" : ""}><span class="button-main">받기</span>${freeLine()}</button><button class="premium" data-rush-offline ${app.pendingOfflineGold <= 0 ? "disabled" : ""}>${actionButton("3배 받기", "diamond", ACTION_BY_ID["rush-offline-reward"].amount)}</button>`,
+        title: abyssT("upgrade.gold_income"),
+        desc: abyssT("upgrade.gold_income_desc"),
+        value: abyssT("upgrade.offline_value", { rate: fmtRate(questGoldPerSecond()), gold: fmt(app.pendingOfflineGold) }),
+        button: `<button data-claim-offline ${app.pendingOfflineGold <= 0 ? "disabled" : ""}><span class="button-main">${abyssT("upgrade.claim")}</span>${freeLine()}</button><button class="premium" data-rush-offline ${app.pendingOfflineGold <= 0 ? "disabled" : ""}>${actionButton(abyssT("upgrade.claim_triple"), "diamond", ACTION_BY_ID["rush-offline-reward"].amount)}</button>`,
         currency: "coin"
       })}
       ${rows}
@@ -294,10 +297,10 @@ function renderTreasurePanel() {
   const rows = TREASURES.map((treasure) => upgradeRow({
     icon: treasureIcon(treasure.id),
     art: catalogAsset("treasures", treasure.id),
-    title: `${treasure.name} Lv.${treasureLevel(treasure.id)}(Max99999)`,
+    title: `${treasure.name} Lv.${treasureLevel(treasure.id)} (${abyssT("common.max")} 99999)`,
     desc: treasure.desc,
     value: treasureEffectText(treasure),
-    button: `<button class="primary" data-buy-treasure="${treasure.id}" ${app.save.souls < treasureCost(treasure) ? "disabled" : ""}>${actionButton("+1 Lv", "soul", treasureCost(treasure))}</button>`,
+    button: `<button class="primary" data-buy-treasure="${treasure.id}" ${app.save.souls < treasureCost(treasure) ? "disabled" : ""}>${actionButton(abyssT("upgrade.plus_one"), "soul", treasureCost(treasure))}</button>`,
     currency: "soul"
   })).join("");
   return `<div class="upgrade-list">${rows}</div>`;
@@ -315,8 +318,8 @@ function renderShopPanel() {
       desc: upgrade.desc,
       value: diamondUpgradeEffectText(upgrade),
       button: maxed
-        ? `<button disabled><span class="button-main">최대</span></button>`
-        : `<button class="premium" data-diamond-upgrade="${upgrade.id}">${actionButton("+1 Lv", "diamond", diamondActionAmount(upgrade.action))}</button>`,
+        ? `<button disabled><span class="button-main">${abyssT("common.max")}</span></button>`
+        : `<button class="premium" data-diamond-upgrade="${upgrade.id}">${actionButton(abyssT("upgrade.plus_one"), "diamond", diamondActionAmount(upgrade.action))}</button>`,
       currency: "diamond"
     });
   }).join("");
@@ -327,8 +330,8 @@ function renderShopPanel() {
     desc: item.desc,
     value: consumablePreviewText(item.id),
     button: `
-      <button class="premium" data-buy-consumable="${item.id}">${actionButton("구매 +1", "diamond", diamondActionAmount(item.action))}</button>
-      <button data-use-consumable="${item.id}" ${consumableCount(item.id) <= 0 ? "disabled" : ""}><span class="button-main">사용</span><span class="button-free">보유 ${fmt(consumableCount(item.id))}</span></button>
+      <button class="premium" data-buy-consumable="${item.id}">${actionButton(abyssT("upgrade.buy_plus_one"), "diamond", diamondActionAmount(item.action))}</button>
+      <button data-use-consumable="${item.id}" ${consumableCount(item.id) <= 0 ? "disabled" : ""}><span class="button-main">${abyssT("common.use")}</span><span class="button-free">${abyssT("upgrade.owned_count", { value: fmt(consumableCount(item.id)) })}</span></button>
     `,
     currency: "diamond dual"
   })).join("");
@@ -336,32 +339,32 @@ function renderShopPanel() {
   return `
     <div class="shop-head">
       <div>
-        <h2>다이아 상점</h2>
-        <p class="muted">특수능력은 환생해도 유지됩니다. 소모품은 구매 후 원하는 타이밍에 사용합니다.</p>
+        <h2>${abyssT("shop.title")}</h2>
+        <p class="muted">${abyssT("shop.description")}</p>
       </div>
       <div class="shop-diamond-badge"><span class="res-icon diamond"></span><strong>${fmt(app.walletBalance)}</strong></div>
     </div>
-    ${boost.battleCatalystActive ? `<div class="shop-active-boost">전투 촉매 적용 중 · 남은 시간 ${formatDuration(boost.battleCatalystRemaining)}</div>` : ""}
+    ${boost.battleCatalystActive ? `<div class="shop-active-boost">${abyssT("shop.catalyst_active", { time: formatDuration(boost.battleCatalystRemaining) })}</div>` : ""}
     <section class="shop-section">
       <div class="shop-section-title">
-        <strong>특수능력</strong>
-        <span>구매 즉시 영구 적용</span>
+        <strong>${abyssT("shop.abilities")}</strong>
+        <span>${abyssT("shop.abilities_desc")}</span>
       </div>
       <div class="upgrade-list">${upgradeRows}</div>
     </section>
     <section class="shop-section">
       <div class="shop-section-title">
-        <strong>특수 소모품</strong>
-        <span>구매 후 보관, 필요할 때 사용</span>
+        <strong>${abyssT("shop.consumables")}</strong>
+        <span>${abyssT("shop.consumables_desc")}</span>
       </div>
       <div class="upgrade-list">${consumableRows}</div>
     </section>
     <section class="shop-section">
       <div class="shop-section-title">
-        <strong>주인공 외형</strong>
-        <span>보유 효과 누적 · 착용은 외형만 변경</span>
+        <strong>${abyssT("shop.skins")}</strong>
+        <span>${abyssT("shop.skins_desc")}</span>
       </div>
-      <div class="skin-summary">누적 보유 효과: ${skinSetEffectText()}</div>
+      <div class="skin-summary">${abyssT("shop.skin_total", { value: skinSetEffectText() })}</div>
       <div class="skin-shop-grid">${skinRows}</div>
     </section>
   `;
@@ -371,10 +374,10 @@ function renderSkinShopCard(skin) {
   const owned = ownsSkin(skin.id);
   const active = activeSkin().id === skin.id;
   const button = active
-    ? `<button disabled><span class="button-main">착용 중</span></button>`
+    ? `<button disabled><span class="button-main">${abyssT("shop.equipped")}</span></button>`
     : owned
-      ? `<button data-equip-skin="${skin.id}"><span class="button-main">착용</span><span class="button-free">보유 효과 적용 중</span></button>`
-      : `<button class="premium" data-buy-skin="${skin.id}">${actionButton("구매", "diamond", diamondActionAmount(skin.action))}</button>`;
+      ? `<button data-equip-skin="${skin.id}"><span class="button-main">${abyssT("shop.equip")}</span><span class="button-free">${abyssT("shop.owned_effect_active")}</span></button>`
+      : `<button class="premium" data-buy-skin="${skin.id}">${actionButton(abyssT("common.buy"), "diamond", diamondActionAmount(skin.action))}</button>`;
   return `
     <div class="skin-card ${owned ? "owned" : ""} ${active ? "active" : ""}">
       <div class="skin-preview" style="--skin-primary:${skin.primary};--skin-secondary:${skin.secondary};--skin-accent:${skin.accent}" aria-hidden="true">
@@ -399,18 +402,18 @@ function diamondUpgradeEffectText(upgrade) {
   const current = upgrade.base * level;
   const next = upgrade.base * Math.min(upgrade.max, level + 1);
   const label = {
-    attackPct: "전체 피해",
-    attackSpeedPct: "공격속도",
-    goldPct: "골드 획득",
-    soulPct: "영혼석 획득"
+    attackPct: abyssT("stat.all_damage"),
+    attackSpeedPct: abyssT("stat.attack_speed"),
+    goldPct: abyssT("stat.gold_gain"),
+    soulPct: abyssT("stat.soul")
   }[upgrade.effect];
   return `${label} +${pct(current)}${level < upgrade.max ? ` → +${pct(next)}` : ""}`;
 }
 
 function consumablePreviewText(id) {
-  if (id === "battle-catalyst") return "5분 동안 전체 피해 +20% / 공격속도 +20%";
-  if (id === "gold-seal") return `즉시 골드 +${fmt(instantGoldReward())}`;
-  if (id === "soul-candle") return `즉시 영혼석 +${fmt(instantSoulReward())}`;
+  if (id === "battle-catalyst") return abyssT("shop.preview_catalyst");
+  if (id === "gold-seal") return abyssT("shop.preview_gold", { value: fmt(instantGoldReward()) });
+  if (id === "soul-candle") return abyssT("shop.preview_soul", { value: fmt(instantSoulReward()) });
   return "";
 }
 
@@ -462,30 +465,30 @@ function treasureIcon(id) {
 
 function upgradeDesc(type) {
   return {
-    attack: "주인공의 기본 주문 피해를 높입니다.",
-    attackSpeed: "주인공과 동료의 공격 주기를 줄입니다.",
-    bossBreak: "보스에게 주는 최종 피해를 높입니다.",
-    familiar: "동료 피해 보정을 높입니다.",
-    greed: "전투와 퀘스트 골드 획득량을 높입니다.",
-    chainSpell: "주문이 일정 확률로 추가 투사체를 발사합니다.",
-    weaknessMark: "적 역할 상성에 맞는 동료 공격 보너스를 높입니다.",
-    soulDrain: "보스 처치와 환생으로 얻는 영혼석을 늘립니다.",
-    abyssPierce: "보스 HP가 높을수록 추가 피해를 줍니다.",
-    vanguardOrder: "편성 동료와 예비대 동료의 피해 기여도를 높입니다.",
-    abyssResistance: "1000층 이후 적이 거는 심연 압박 디버프를 줄입니다."
+    attack: abyssT("upgrade.desc_attack"),
+    attackSpeed: abyssT("upgrade.desc_attack_speed"),
+    bossBreak: abyssT("upgrade.desc_boss_break"),
+    familiar: abyssT("upgrade.desc_familiar"),
+    greed: abyssT("upgrade.desc_greed"),
+    chainSpell: abyssT("upgrade.desc_chain_spell"),
+    weaknessMark: abyssT("upgrade.desc_weakness"),
+    soulDrain: abyssT("upgrade.desc_soul_drain"),
+    abyssPierce: abyssT("upgrade.desc_abyss_pierce"),
+    vanguardOrder: abyssT("upgrade.desc_vanguard"),
+    abyssResistance: abyssT("upgrade.desc_resistance")
   }[type];
 }
 
 function renderSummonPanel() {
   return `
-    <div class="summon-subnav" role="group" aria-label="소환 메뉴">
+    <div class="summon-subnav" role="group" aria-label="${abyssT("summon.menu_label")}">
       <button class="${app.summonView === "summon" ? "active" : ""}" data-summon-view="summon" aria-pressed="${app.summonView === "summon"}">
-        <strong>뽑기</strong>
-        <span>소환 실행</span>
+        <strong>${abyssT("summon.draw")}</strong>
+        <span>${abyssT("summon.draw_desc")}</span>
       </button>
       <button class="${app.summonView === "codex" ? "active" : ""}" data-summon-view="codex" aria-pressed="${app.summonView === "codex"}">
-        <strong>도감</strong>
-        <span>수집/효과</span>
+        <strong>${abyssT("summon.codex")}</strong>
+        <span>${abyssT("summon.codex_desc")}</span>
       </button>
     </div>
     ${app.summonView === "codex" ? renderCodexPanel() : renderSummonDrawPanel()}
@@ -495,20 +498,20 @@ function renderSummonPanel() {
 function renderSummonDrawPanel() {
   const normalButton = (kind, count) => {
     const cost = normalSummonCost(kind, count);
-    return `<button class="primary summon-action-btn" data-summon="normal:${kind}:${count}" ${app.save.gold < cost ? "disabled" : ""}>${renderSummonButtonContent(`${count}회`, "coin", cost)}</button>`;
+    return `<button class="primary summon-action-btn" data-summon="normal:${kind}:${count}" ${app.save.gold < cost ? "disabled" : ""}>${renderSummonButtonContent(abyssT("summon.count", { count }), "coin", cost)}</button>`;
   };
   const premiumButton = (kind, count) => {
-    return `<button class="premium summon-action-btn" data-summon="premium:${kind}:${count}">${renderSummonButtonContent(`${count}회`, "diamond", ACTION_BY_ID[`summon-${kind}-${count}`].amount)}</button>`;
+    return `<button class="premium summon-action-btn" data-summon="premium:${kind}:${count}">${renderSummonButtonContent(abyssT("summon.count", { count }), "diamond", ACTION_BY_ID[`summon-${kind}-${count}`].amount)}</button>`;
   };
   return `
     <div class="summon-draw">
       <div class="summon-draw-head">
         <div>
-          <p class="panel-kicker">소환</p>
-          <h2>심연 소환</h2>
-          <p class="muted">골드/다이아로 소환합니다. 보유 효과는 계속 누적됩니다.</p>
+          <p class="panel-kicker">${abyssT("nav.summon")}</p>
+          <h2>${abyssT("summon.title")}</h2>
+          <p class="muted">${abyssT("summon.description")}</p>
         </div>
-        <div class="summon-wallet" aria-label="보유 재화">
+        <div class="summon-wallet" aria-label="${abyssT("summon.wallet_label")}">
           <span><i class="res-icon coin"></i><strong>${fmt(app.save.gold)}</strong></span>
           <span><i class="res-icon diamond"></i><strong>${fmt(app.walletBalance)}</strong></span>
         </div>
@@ -526,7 +529,7 @@ function renderSummonDrawPanel() {
 }
 
 function renderSummonButtonContent(label, currency, amount) {
-  const currencyLabel = currency === "diamond" ? "다이아" : "골드";
+  const currencyLabel = currency === "diamond" ? abyssT("currency.diamond") : abyssT("currency.gold");
   return `
     <span class="summon-action-main">${label}</span>
     <span class="summon-action-cost"><i class="res-icon ${currency}"></i><b>${currencyLabel} ${fmt(amount)}</b></span>
@@ -535,9 +538,9 @@ function renderSummonButtonContent(label, currency, amount) {
 
 function renderSummonModeCard(mode, buttonFor) {
   const premium = mode === "premium";
-  const label = premium ? "프리미엄 소환" : "일반 소환";
-  const currency = premium ? "다이아" : "골드";
-  const desc = premium ? "Epic/Legendary 확률이 더 높습니다." : "기본 성장 재료를 안정적으로 모읍니다.";
+  const label = abyssT(premium ? "summon.premium" : "summon.normal");
+  const currency = abyssT(premium ? "currency.diamond" : "currency.gold");
+  const desc = abyssT(premium ? "summon.premium_desc" : "summon.normal_desc");
   return `
     <article class="summon-mode-card ${premium ? "premium" : "normal"}">
       <div class="summon-mode-head">
@@ -548,10 +551,10 @@ function renderSummonModeCard(mode, buttonFor) {
         <b>${currency}</b>
       </div>
       <div class="summon-kind-list">
-        ${renderSummonKindRow("hero", "동료", "heroes", "white-lantern", buttonFor)}
-        ${renderSummonKindRow("gear", "장비", "gear", "king-eater", buttonFor)}
+        ${renderSummonKindRow("hero", abyssT("summon.hero"), "heroes", "white-lantern", buttonFor)}
+        ${renderSummonKindRow("gear", abyssT("summon.gear"), "gear", "king-eater", buttonFor)}
       </div>
-      <div class="summon-rate-chips" aria-label="${label} 확률">
+      <div class="summon-rate-chips" aria-label="${abyssT("summon.rates_label", { label })}">
         ${renderSummonRateChips(mode)}
       </div>
     </article>
@@ -585,16 +588,16 @@ function renderSummonRateChips(mode) {
 
 function renderSummonPityPanel() {
   return `
-    <section class="summon-meter-card" aria-label="소환 천장">
+    <section class="summon-meter-card" aria-label="${abyssT("summon.pity_label")}">
       <div class="summon-section-label">
-        <strong>천장</strong>
-        <span>확정 보상까지의 진행도</span>
+        <strong>${abyssT("summon.pity")}</strong>
+        <span>${abyssT("summon.pity_desc")}</span>
       </div>
       <div class="summon-pity-list">
-        ${renderSummonPityRow("일반 동료", app.save.normalPity.hero, NORMAL_PITY)}
-        ${renderSummonPityRow("일반 장비", app.save.normalPity.gear, NORMAL_PITY)}
-        ${renderSummonPityRow("프리미엄 동료", app.save.pity.hero, MAX_PITY)}
-        ${renderSummonPityRow("프리미엄 장비", app.save.pity.gear, MAX_PITY)}
+        ${renderSummonPityRow(abyssT("summon.normal_hero"), app.save.normalPity.hero, NORMAL_PITY)}
+        ${renderSummonPityRow(abyssT("summon.normal_gear"), app.save.normalPity.gear, NORMAL_PITY)}
+        ${renderSummonPityRow(abyssT("summon.premium_hero"), app.save.pity.hero, MAX_PITY)}
+        ${renderSummonPityRow(abyssT("summon.premium_gear"), app.save.pity.gear, MAX_PITY)}
       </div>
     </section>
   `;
@@ -616,8 +619,8 @@ function renderSummonBonusCard() {
     <section class="summon-bonus-card">
       <div class="summon-bonus-icon">${catalogImgTag("heroes", "white-lantern", "")}</div>
       <div>
-        <strong>동료 계약</strong>
-        <p>편성하지 않은 동료도 예비대와 공명으로 보유 효과가 반영됩니다.</p>
+        <strong>${abyssT("summon.contract")}</strong>
+        <p>${abyssT("summon.contract_desc")}</p>
       </div>
     </section>
   `;
@@ -637,8 +640,10 @@ function codexEntries(kind) {
         owned: Boolean(owned),
         image: catalogAsset("heroes", hero.id),
         meta: `${RARITIES[hero.rarity].label} / ${ROLES[hero.role].label}`,
-        value: owned ? `보유 효과: ${heroOwnedEffectText(hero, level)}` : "소환에서 획득 가능",
-        detail: owned ? `Lv.${level} / 조각 ${owned.shards}/${shardNeed(hero.rarity, level)}` : `기본 전투력 ${fmt(itemPowerAtLevel("hero", hero.id, 1))}`
+        value: owned ? abyssT("codex.owned_effect", { value: heroOwnedEffectText(hero, level) }) : abyssT("codex.available_summon"),
+        detail: owned
+          ? abyssT("codex.level_shards", { level, current: owned.shards, required: shardNeed(hero.rarity, level) })
+          : abyssT("codex.base_power", { value: fmt(itemPowerAtLevel("hero", hero.id, 1)) })
       };
     });
   }
@@ -654,8 +659,12 @@ function codexEntries(kind) {
         owned: Boolean(owned),
         image: catalogAsset("gear", gear.id),
         meta: `${RARITIES[gear.rarity].label} / ${slotLabel(gear.slot)}`,
-        value: owned ? `장착 효과: 전투력 ${fmt(itemPower("gear", gear.id))} · ${gearOptionText(gear, owned)}` : "장비 소환에서 획득 가능",
-        detail: owned ? `보유 효과: ${gearOwnedEffectText(gear, level)} / 조각 ${owned.shards}/${shardNeed(gear.rarity, level)}` : `기본 전투력 ${fmt(itemPowerAtLevel("gear", gear.id, 1))}`
+        value: owned
+          ? abyssT("codex.equip_effect", { power: fmt(itemPower("gear", gear.id)), effect: gearOptionText(gear, owned) })
+          : abyssT("codex.available_gear_summon"),
+        detail: owned
+          ? abyssT("codex.owned_shards", { effect: gearOwnedEffectText(gear, level), current: owned.shards, required: shardNeed(gear.rarity, level) })
+          : abyssT("codex.base_power", { value: fmt(itemPowerAtLevel("gear", gear.id, 1)) })
       };
     });
   }
@@ -673,12 +682,17 @@ function codexEntries(kind) {
       role: enemy.role,
       firstStage: enemy.firstStage,
       sprite: monsterSpriteData(enemy, "normal"),
-      meta: `${zone?.theme || "심연"} / ${enemy.tier === "weak" ? "약한 잡몹" : "일반 잡몹"} / ${ROLES[enemy.role].label}`,
-      value: enemy.visualKeywords || "심연 진행 중 반복 출현하는 일반 적입니다.",
-      detail: discovered ? `${enemy.firstStage}층권 발견` : `${enemy.firstStage}층부터 발견 가능`
+      meta: `${zone?.theme || abyssT("codex.abyss")} / ${abyssT(enemy.tier === "weak" ? "codex.weak_mob" : "codex.normal_mob")} / ${ROLES[enemy.role].label}`,
+      value: enemy.visualKeywords || abyssT("codex.normal_desc"),
+      detail: abyssT(discovered ? "codex.found_band" : "codex.available_from", { stage: enemy.firstStage })
     };
   });
-  const bossTypeLabels = { floor: "층 보스", gate: "10층 관문 보스", apex: "100층 심층 보스", final: "최종 보스" };
+  const bossTypeLabels = {
+    floor: abyssT("codex.type_floor"),
+    gate: abyssT("codex.type_gate"),
+    apex: abyssT("codex.type_apex"),
+    final: abyssT("codex.type_final")
+  };
   const bosses = BOSS_VARIANTS.map((boss) => {
     const zone = MONSTER_ZONE_CATALOG.find((item) => item.index === boss.zone);
     const requiredStage = boss.firstStage || zone?.start || 1;
@@ -692,9 +706,9 @@ function codexEntries(kind) {
       role: boss.role,
       firstStage: requiredStage,
       sprite: monsterSpriteData(boss, "boss"),
-      meta: `${zone?.theme || "심연"} / ${bossTypeLabels[boss.type] || "보스"} / ${ROLES[boss.role].label}`,
-      value: "각 구간에서 성장 속도를 시험하는 강한 적입니다.",
-      detail: maxStage >= requiredStage ? `${requiredStage}층 보스 발견` : `${requiredStage}층에서 발견 가능`
+      meta: `${zone?.theme || abyssT("codex.abyss")} / ${bossTypeLabels[boss.type] || abyssT("codex.boss")} / ${ROLES[boss.role].label}`,
+      value: abyssT("codex.boss_desc"),
+      detail: abyssT(maxStage >= requiredStage ? "codex.boss_found" : "codex.boss_available", { stage: requiredStage })
     };
   });
   return [...normals, ...bosses];
@@ -711,7 +725,7 @@ function codexSummary(kind) {
 }
 
 function codexProgressLabel(kind) {
-  return kind === "monsters" ? "발견" : "보유";
+  return abyssT(kind === "monsters" ? "codex.discovered" : "codex.owned");
 }
 
 function renderCodexFilterButton(option) {
@@ -719,7 +733,7 @@ function renderCodexFilterButton(option) {
   const active = normalizeCodexKind(app.codexKind) === option.value;
   return `
     <button class="${active ? "active" : ""}" data-codex-kind="${option.value}" aria-pressed="${active}">
-      <strong>${option.label}</strong>
+      <strong>${abyssT(option.labelKey)}</strong>
       <span>${summary.owned}/${summary.total}</span>
     </button>
   `;
@@ -730,12 +744,13 @@ function renderCodexPanel() {
   if (app.codexKind !== kind) app.codexKind = kind;
   const entries = codexEntries(kind);
   const summary = codexSummary(kind);
-  const currentLabel = CODEX_KIND_FILTERS.find((option) => option.value === kind)?.label || "도감";
+  const currentOption = CODEX_KIND_FILTERS.find((option) => option.value === kind);
+  const currentLabel = currentOption ? abyssT(currentOption.labelKey) : abyssT("codex.default");
   return `
     <div class="codex-head">
       <div>
-        <h2>심연 도감</h2>
-        <p class="muted">수집한 항목의 보유 효과와 발견 진행도를 확인합니다. 도감은 별도 하단 탭 없이 소환 탭 안에서 관리합니다.</p>
+        <h2>${abyssT("codex.title")}</h2>
+        <p class="muted">${abyssT("codex.description")}</p>
       </div>
       <div class="codex-progress">
         <strong>${currentLabel} ${codexProgressLabel(kind)} ${summary.owned}/${summary.total}</strong>
@@ -743,7 +758,7 @@ function renderCodexPanel() {
         <i style="--codex-progress:${summary.ratio}"></i>
       </div>
     </div>
-    <div class="codex-filter" role="group" aria-label="도감 분류">
+    <div class="codex-filter" role="group" aria-label="${abyssT("codex.group_label")}">
       ${CODEX_KIND_FILTERS.map(renderCodexFilterButton).join("")}
     </div>
     <div class="codex-groups">
@@ -773,8 +788,8 @@ function renderCodexGroups(entries) {
 
 function renderMonsterCodexGroups(entries) {
   const groups = [
-    { value: "normal", label: "일반 몬스터" },
-    { value: "boss", label: "보스" }
+    { value: "normal", label: abyssT("codex.normal_monster") },
+    { value: "boss", label: abyssT("codex.boss") }
   ];
   return groups.map((group) => {
     const groupEntries = entries.filter((entry) => entry.monsterType === group.value)
@@ -785,7 +800,7 @@ function renderMonsterCodexGroups(entries) {
         if (stageDiff !== 0) return stageDiff;
         const rarityDiff = CODEX_RARITY_ORDER.indexOf(a.rarity) - CODEX_RARITY_ORDER.indexOf(b.rarity);
         if (rarityDiff !== 0) return rarityDiff;
-        return a.name.localeCompare(b.name, "ko-KR");
+        return a.name.localeCompare(b.name, abyssLocaleTag());
       });
     if (groupEntries.length === 0) return "";
     const discovered = groupEntries.filter((entry) => entry.owned).length;
@@ -793,7 +808,7 @@ function renderMonsterCodexGroups(entries) {
       <section class="codex-rarity-section monster-codex-section monster-${group.value}">
         <div class="codex-rarity-head monster-codex-head">
           <strong>${group.label}</strong>
-          <span>발견 ${discovered}/${groupEntries.length}</span>
+          <span>${abyssT("codex.discovered")} ${discovered}/${groupEntries.length}</span>
         </div>
         <div class="codex-grid">
           ${groupEntries.map(renderCodexCard).join("")}
@@ -805,8 +820,10 @@ function renderMonsterCodexGroups(entries) {
 
 function renderCodexCard(entry) {
   const locked = !entry.owned;
-  const displayName = locked && entry.kind === "monsters" ? "미발견" : entry.name;
-  const status = entry.kind === "monsters" ? (locked ? "미발견" : "발견") : (locked ? "미획득" : "보유");
+  const displayName = locked && entry.kind === "monsters" ? abyssT("codex.undiscovered") : entry.name;
+  const status = entry.kind === "monsters"
+    ? abyssT(locked ? "codex.undiscovered" : "codex.discovered")
+    : abyssT(locked ? "codex.not_owned" : "codex.owned");
   const tooltip = [
     displayName,
     entry.meta,
@@ -846,13 +863,13 @@ function renderHeroesPanel() {
           <div class="collection-art">${catalogImgTag("heroes", id, hero.name)}</div>
           <div class="collection-copy">
             <h3 class="${rarityClass(hero.rarity)}">${hero.name} Lv.${owned.level}</h3>
-            <p class="tiny">${RARITIES[hero.rarity].label} / <span class="${roleClass(hero.role)}">${ROLES[hero.role].label}</span> / 전투력 ${fmt(itemPower("hero", id))}</p>
-            <p class="muted">${isEquipped ? "전열 전투 중" : `예비대 DPS ${pct(roster.reserveShare)}`} · ${ROLES[hero.role].bonus}</p>
-            <p class="tiny">보유 효과: ${heroOwnedEffectText(hero, owned.level)}</p>
+            <p class="tiny">${RARITIES[hero.rarity].label} / <span class="${roleClass(hero.role)}">${ROLES[hero.role].label}</span> / ${abyssT("heroes.power", { value: fmt(itemPower("hero", id)) })}</p>
+            <p class="muted">${isEquipped ? abyssT("heroes.frontline") : abyssT("heroes.reserve", { value: pct(roster.reserveShare) })} · ${ROLES[hero.role].bonus}</p>
+            <p class="tiny">${abyssT("heroes.owned_effect", { value: heroOwnedEffectText(hero, owned.level) })}</p>
             ${heroGrowthEffectLines(id)}
             <div class="tiny">${shardProgressText(hero, owned)}</div>
-            <div class="tiny">공명 ${influence.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}</div>
-            <button data-equip-hero="${id}">${isEquipped ? "편성 해제" : "편성"}</button>
+            <div class="tiny">${abyssT("heroes.resonance", { value: influence.toLocaleString(abyssLocaleTag(), { maximumFractionDigits: 2 }) })}</div>
+            <button data-equip-hero="${id}">${abyssT(isEquipped ? "heroes.remove" : "heroes.equip")}</button>
           </div>
         </div>
       `;
@@ -861,18 +878,18 @@ function renderHeroesPanel() {
   return `
     <div class="hero-panel-head">
       <div>
-        <h2>동료 편성</h2>
-        <p class="muted">전열 3명은 직접 전투하고, 나머지는 예비대와 공명으로 기여합니다.</p>
+        <h2>${abyssT("heroes.title")}</h2>
+        <p class="muted">${abyssT("heroes.description")}</p>
       </div>
-      <button data-auto-heroes>추천 편성</button>
+      <button data-auto-heroes>${abyssT("heroes.recommend")}</button>
     </div>
     <div class="hero-summary-grid">
-      ${heroSummaryChip("수집", `${roster.uniqueCount}/${HEROES.length}`)}
-      ${heroSummaryChip("전열", `${app.save.equippedHeroes.length}/3`)}
-      ${heroSummaryChip("예비대 DPS", fmtRate(roster.reserveDps))}
-      ${heroSummaryChip("공명 공격", `+${pct(roster.attackPct)}`)}
-      ${heroSummaryChip("레벨/승급", `${fmt(roster.totalLevels)} / ${fmt(roster.duplicateLevels)}`)}
-      ${heroSummaryChip("역할 보너스", `탱 ${pct(roster.tankBossPct)} · 딜 ${pct(roster.dpsPct)}`)}
+      ${heroSummaryChip(abyssT("heroes.collection"), `${roster.uniqueCount}/${HEROES.length}`)}
+      ${heroSummaryChip(abyssT("heroes.frontline_count"), `${app.save.equippedHeroes.length}/3`)}
+      ${heroSummaryChip(abyssT("stat.reserve_dps"), fmtRate(roster.reserveDps))}
+      ${heroSummaryChip(abyssT("heroes.resonance_attack"), `+${pct(roster.attackPct)}`)}
+      ${heroSummaryChip(abyssT("heroes.level_rank"), `${fmt(roster.totalLevels)} / ${fmt(roster.duplicateLevels)}`)}
+      ${heroSummaryChip(abyssT("heroes.role_bonus"), abyssT("heroes.role_bonus_value", { tank: pct(roster.tankBossPct), dps: pct(roster.dpsPct) }))}
     </div>
     <div class="grid cols-3 heroes-grid">${cards}</div>
   `;
@@ -889,14 +906,14 @@ function heroSummaryChip(label, value) {
 
 function renderGearSlotFilters(ownedIds) {
   return `
-    <div class="gear-slot-filter" role="group" aria-label="장비 부위 선택">
+    <div class="gear-slot-filter" role="group" aria-label="${abyssT("gear.slot_label")}">
       ${GEAR_SLOT_FILTERS.map((option) => {
         const count = ownedIds.filter((id) => getData("gear", id).slot === option.value).length;
         const active = app.gearSlotFilter === option.value;
         return `
           <button class="${active ? "active" : ""}" data-gear-slot-filter="${option.value}" aria-pressed="${active}">
-            <strong>${option.label}</strong>
-            <span>${count}개</span>
+            <strong>${abyssT(option.labelKey)}</strong>
+            <span>${abyssT("common.count", { value: count })}</span>
           </button>
         `;
       }).join("")}
@@ -911,7 +928,7 @@ function renderGearPanel() {
   if (app.gearSlotFilter !== activeSlot) app.gearSlotFilter = activeSlot;
   const slotIds = ownedIds.filter((id) => getData("gear", id).slot === activeSlot);
   const equippedId = app.save.equippedGear[activeSlot];
-  const equippedText = equippedId ? `장착 ${getData("gear", equippedId).name}` : "장착 없음";
+  const equippedText = equippedId ? abyssT("gear.equipped_name", { name: getData("gear", equippedId).name }) : abyssT("gear.equipped_none");
   const cards = slotIds.map((id) => {
     const gear = getData("gear", id);
     const owned = getOwned("gear", id);
@@ -920,12 +937,12 @@ function renderGearPanel() {
         <div class="collection-art">${catalogImgTag("gear", id, gear.name)}</div>
         <div class="collection-copy">
           <h3 class="${rarityClass(gear.rarity)}">${gear.name} Lv.${owned.level}</h3>
-          <p class="tiny">${RARITIES[gear.rarity].label} / ${slotLabel(gear.slot)} / 전투력 ${fmt(itemPower("gear", id))}</p>
-          <p class="tiny">장착 효과: 전투력 ${fmt(itemPower("gear", id))} · ${gearOptionText(gear, owned)}</p>
-          <p class="tiny">보유 효과: ${gearOwnedEffectText(gear, owned.level)}</p>
+          <p class="tiny">${abyssT("gear.power_line", { rarity: RARITIES[gear.rarity].label, slot: slotLabel(gear.slot), power: fmt(itemPower("gear", id)) })}</p>
+          <p class="tiny">${abyssT("gear.equip_effect", { power: fmt(itemPower("gear", id)), effect: gearOptionText(gear, owned) })}</p>
+          <p class="tiny">${abyssT("gear.owned_effect", { effect: gearOwnedEffectText(gear, owned.level) })}</p>
           ${gearGrowthEffectLines(id)}
           <div class="tiny">${shardProgressText(gear, owned)}</div>
-          <button data-equip-gear="${id}">${equipped.has(id) ? "장착 중" : "장착"}</button>
+          <button data-equip-gear="${id}">${abyssT(equipped.has(id) ? "gear.equipped" : "gear.equip")}</button>
         </div>
       </div>
     `;
@@ -933,20 +950,20 @@ function renderGearPanel() {
   return `
     <div class="split">
       <div>
-        <h2>장비</h2>
-        <p class="muted">조각이 차면 Lv+1 됩니다. Lv+1은 장착 효과와 보유 효과를 함께 올립니다.</p>
+        <h2>${abyssT("gear.title")}</h2>
+        <p class="muted">${abyssT("gear.description")}</p>
       </div>
-      <button data-auto-gear>추천 장비</button>
+      <button data-auto-gear>${abyssT("gear.recommend")}</button>
     </div>
     ${renderGearSlotFilters(ownedIds)}
     <div class="gear-sections">
       <section class="gear-section">
         <div class="gear-section-head">
           <strong>${slotLabel(activeSlot)}</strong>
-          <span>${slotIds.length}개 보유 · ${equippedText}</span>
+          <span>${abyssT("gear.owned_summary", { count: slotIds.length, equipped: equippedText })}</span>
         </div>
         <div class="grid cols-3 gear-grid">
-          ${cards || `<div class="gear-empty">아직 보유한 ${slotLabel(activeSlot)} 장비가 없습니다.</div>`}
+          ${cards || `<div class="gear-empty">${abyssT("gear.empty", { slot: slotLabel(activeSlot) })}</div>`}
         </div>
       </section>
     </div>
@@ -954,39 +971,42 @@ function renderGearPanel() {
 }
 
 function slotLabel(slot) {
-  return { weapon: "무기", armor: "갑옷", relic: "유물" }[slot];
+  const key = { weapon: "gear.weapon", armor: "gear.armor", relic: "gear.relic" }[slot];
+  return key ? abyssT(key) : slot;
 }
 
 function renderRebirthPanel() {
   const reward = rebirthReward();
   const gateText = reward.canRebirth
-    ? `현재 ${reward.currentStage}층 · 지금 환생 가능`
-    : `현재 ${reward.currentStage}층 · ${reward.remainingStages}층 더 진행 필요`;
-  const rewardText = reward.canRebirth ? `${fmt(reward.souls)} 영혼석` : `${reward.requiredStage}층 도달 후 계산`;
-  const buttonText = reward.canRebirth ? "환생하기" : `${reward.remainingStages}층 남음`;
+    ? abyssT("rebirth.ready", { stage: reward.currentStage })
+    : abyssT("rebirth.need_more", { stage: reward.currentStage, remaining: reward.remainingStages });
+  const rewardText = reward.canRebirth
+    ? abyssT("rebirth.reward", { value: fmt(reward.souls) })
+    : abyssT("rebirth.calculate_after", { stage: reward.requiredStage });
+  const buttonText = reward.canRebirth ? abyssT("rebirth.action") : abyssT("rebirth.remaining", { remaining: reward.remainingStages });
   return `
     <div class="grid cols-2">
       <div class="card">
-        <h2>환생</h2>
-        <p class="muted">${reward.requiredStage}층 이상에서 이번 회차를 끝내고 1층부터 다시 시작합니다. 보상으로 영혼석을 받고, 동료·장비·보물·소환 천장은 유지됩니다.</p>
+        <h2>${abyssT("rebirth.title")}</h2>
+        <p class="muted">${abyssT("rebirth.description", { stage: reward.requiredStage })}</p>
         <p class="tiny">${gateText}</p>
-        <p>받을 영혼석: <strong>${rewardText}</strong></p>
+        <p>${abyssT("rebirth.reward_label")} <strong>${rewardText}</strong></p>
         <button class="warn" data-rebirth ${!reward.canRebirth || reward.souls <= 0 ? "disabled" : ""}>${buttonText}</button>
       </div>
       <div class="card">
-        <h2>누적 기록</h2>
-        <p class="tiny">최고 층 ${app.save.maxStage}</p>
-        <p class="tiny">처치 ${app.save.stats.monstersKilled}마리 / 클리어 ${app.save.stats.floorsCleared}층</p>
-        <p class="tiny">환생 ${app.save.rebirths}회</p>
-        <p class="tiny">보스 처치 ${app.save.stats.bossesKilled}회</p>
-        <p class="tiny">누적 영혼석 ${fmt(app.save.stats.soulsEarned)}</p>
-        <p class="tiny">누적 소환 ${app.save.stats.totalSummons}회</p>
-        <p class="tiny">최고 전투력 ${fmt(app.save.stats.bestPower)}</p>
+        <h2>${abyssT("rebirth.records")}</h2>
+        <p class="tiny">${abyssT("rebirth.max_floor", { value: app.save.maxStage })}</p>
+        <p class="tiny">${abyssT("rebirth.kills_clears", { kills: app.save.stats.monstersKilled, floors: app.save.stats.floorsCleared })}</p>
+        <p class="tiny">${abyssT("rebirth.count", { value: app.save.rebirths })}</p>
+        <p class="tiny">${abyssT("rebirth.bosses", { value: app.save.stats.bossesKilled })}</p>
+        <p class="tiny">${abyssT("rebirth.total_souls", { value: fmt(app.save.stats.soulsEarned) })}</p>
+        <p class="tiny">${abyssT("rebirth.total_summons", { value: app.save.stats.totalSummons })}</p>
+        <p class="tiny">${abyssT("rebirth.best_power", { value: fmt(app.save.stats.bestPower) })}</p>
       </div>
     </div>
     <div class="card" style="margin-top:10px">
-      <h3>최근 기록</h3>
-      ${app.log.map((line) => `<p class="tiny">${line}</p>`).join("")}
+      <h3>${abyssT("rebirth.recent")}</h3>
+      ${app.log.map((entry) => `<p class="tiny">${escapeHtml(abyssFormatLog(entry))}</p>`).join("")}
     </div>
   `;
 }

@@ -224,10 +224,10 @@ function defeatEnemy() {
     app.save.souls += souls;
     app.save.stats.soulsEarned += souls;
     app.save.stats.bossesKilled += 1;
-    pushLog(`보스 처치! 골드 +${fmt(gold)} / 영혼석 +${fmt(souls)}`);
+    pushLog("log.boss_kill", { gold: fmt(gold), souls: fmt(souls) });
     playSfx("bossClear");
   } else {
-    pushLog(`${defeated.name} 격파. 골드 +${fmt(gold)}`);
+    pushLog("log.enemy_kill", { name: defeated.name, gold: fmt(gold) });
     playSfx("enemyDown", 0.62, 520);
   }
   if (app.save.floorKill >= MONSTERS_PER_FLOOR) {

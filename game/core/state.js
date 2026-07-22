@@ -1,7 +1,9 @@
 "use strict";
 
 const DEFAULT_SAVE = {
-  saveSchemaVersion: 2,
+  saveSchemaVersion: 3,
+  localeOverride: null,
+  onboardingComplete: false,
   gold: 0,
   stage: 1,
   floorKill: 1,
@@ -85,17 +87,17 @@ const UPGRADE_STEP_OPTIONS = [
   { value: "1", label: "+1" },
   { value: "10", label: "+10" },
   { value: "100", label: "+100" },
-  { value: "max", label: "최대" }
+  { value: "max", labelKey: "common.max" }
 ];
 const GEAR_SLOT_FILTERS = [
-  { value: "weapon", label: "무기" },
-  { value: "armor", label: "갑옷" },
-  { value: "relic", label: "유물" }
+  { value: "weapon", labelKey: "gear.weapon" },
+  { value: "armor", labelKey: "gear.armor" },
+  { value: "relic", labelKey: "gear.relic" }
 ];
 const CODEX_KIND_FILTERS = [
-  { value: "heroes", label: "동료" },
-  { value: "gear", label: "장비" },
-  { value: "monsters", label: "몬스터" }
+  { value: "heroes", labelKey: "summon.hero" },
+  { value: "gear", labelKey: "summon.gear" },
+  { value: "monsters", labelKey: "codex.normal_monster" }
 ];
 const ITEM_LEVEL_POWER_GROWTH = 0.22;
 const RESERVE_DPS_SHARE = 0.18;

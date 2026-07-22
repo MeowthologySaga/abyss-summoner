@@ -151,6 +151,14 @@ function bindEvents() {
       if (!target) render();
     }
     if (!target) return;
+    if (target.dataset.language) {
+      await setGameLanguage(target.dataset.language);
+      return;
+    }
+    if (target.dataset.startGame !== undefined) {
+      await window.ABYSS_SUMMONER_START_SCREEN.startGameFromTitle();
+      return;
+    }
     if (target.dataset.upgradeStep) {
       setUpgradeStep(target.dataset.upgradeStep);
       return;
@@ -169,7 +177,7 @@ function bindEvents() {
     }
     if (target.dataset.saveNow !== undefined) {
       await writeSave();
-      showToast("저장했습니다.");
+      showToast(abyssT("settings.saved"));
       return;
     }
     if (target.dataset.gearSlotFilter) {
@@ -206,10 +214,10 @@ function bindEvents() {
         trigger: target,
         buttonSelector: "[data-auto-heroes]",
         cardSelector: "[data-hero-id]",
-        confirmLabel: "편성 완료",
-        successPrefix: "추천 편성 완료",
-        sameMessage: "이미 추천 편성입니다",
-        emptyMessage: "추천할 동료가 없습니다",
+        confirmLabel: abyssT("heroes.recommend_done"),
+        successPrefix: abyssT("heroes.recommend_success"),
+        sameMessage: abyssT("heroes.recommend_same"),
+        emptyMessage: abyssT("heroes.recommend_empty"),
         result: autoEquipHeroes()
       });
     }
@@ -219,10 +227,10 @@ function bindEvents() {
         trigger: target,
         buttonSelector: "[data-auto-gear]",
         cardSelector: "[data-gear-id]",
-        confirmLabel: "장비 완료",
-        successPrefix: "추천 장비 완료",
-        sameMessage: "이미 추천 장비입니다",
-        emptyMessage: "추천할 장비가 없습니다",
+        confirmLabel: abyssT("gear.recommend_done"),
+        successPrefix: abyssT("gear.recommend_success"),
+        sameMessage: abyssT("gear.recommend_same"),
+        emptyMessage: abyssT("gear.recommend_empty"),
         result: autoEquipGear()
       });
     }

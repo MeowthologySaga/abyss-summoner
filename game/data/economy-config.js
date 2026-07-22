@@ -149,6 +149,15 @@
     }
   };
 
+  const i18n = window.ABYSS_SUMMONER_I18N;
+  if (!i18n) {
+    throw new Error("i18n.js must be loaded before economy-config.js");
+  }
+  i18n.bindCatalog(diamondUpgrades, "diamondUpgrades");
+  i18n.bindCatalog(consumables, "consumables");
+  i18n.bindCatalog(summonModes, "summonModes");
+  i18n.bindCatalog(treasures, "treasures");
+
   window.ABYSS_SUMMONER_ECONOMY_CONFIG = economyConfig;
   window.ABYSS_SUMMONER_DIAMOND_ACTIONS = diamondActions;
 })();
