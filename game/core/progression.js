@@ -146,7 +146,7 @@ function shopUiIcon(id) {
 }
 
 function catalogAsset(kind, id) {
-  return `../assets/generated/catalog/${kind}/${id}.png`;
+  return `../assets/generated/catalog/${kind}/${id}.webp`;
 }
 
 function catalogFallbackIcon(kind, id) {
