@@ -142,14 +142,17 @@ function writeGearSlotFilterPreference(value) {
   }
 }
 
+const AUDIO_DEFAULT_VERSION = 2;
+
 const DEFAULT_SETTINGS = {
-  bgmEnabled: false,
+  bgmEnabled: true,
   sfxEnabled: true,
   bgmVolume: 1,
   sfxVolume: 1,
   damageNumbers: true,
   adviceBubble: true,
-  reducedMotion: false
+  reducedMotion: false,
+  audioDefaultVersion: AUDIO_DEFAULT_VERSION
 };
 
 function normalizeVolumeSetting(value) {
@@ -161,7 +164,12 @@ function normalizeVolumeSetting(value) {
 function readSettingsPreference() {
   try {
     const raw = localStorage.getItem("abyss-summoner-settings");
-    const settings = { ...DEFAULT_SETTINGS, ...(raw ? JSON.parse(raw) : {}) };
+    const stored = raw ? JSON.parse(raw) : {};
+    const settings = { ...DEFAULT_SETTINGS, ...stored };
+    if (stored.audioDefaultVersion !== AUDIO_DEFAULT_VERSION) {
+      settings.bgmEnabled = true;
+      settings.audioDefaultVersion = AUDIO_DEFAULT_VERSION;
+    }
     settings.bgmVolume = normalizeVolumeSetting(settings.bgmVolume);
     settings.sfxVolume = normalizeVolumeSetting(settings.sfxVolume);
     return settings;
